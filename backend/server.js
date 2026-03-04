@@ -5,6 +5,9 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 const app = express();
 
+//import routes
+import userRoutes from "./routes/userRoutes.js";
+
 // Configure environment
 dotenv.config();
 
@@ -17,7 +20,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Routes
-
+app.use("/api/v1/users", userRoutes);
 
 app.get("/", (req, res) => {
   res.send({
