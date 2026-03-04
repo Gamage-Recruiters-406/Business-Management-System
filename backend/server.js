@@ -3,6 +3,8 @@ import cors from 'cors';
 import connectDB from './config/db.js';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
+import taskRoutes from './routes/taskRoutes.js';
+
 const app = express();
 
 // Configure environment
@@ -17,7 +19,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Routes
-
+app.use('/api/tasks', taskRoutes);
 
 app.get("/", (req, res) => {
   res.send({
