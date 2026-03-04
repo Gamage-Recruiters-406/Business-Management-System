@@ -8,6 +8,7 @@ import cookieParser from 'cookie-parser';
 import userRoutes from "./routes/userRoutes.js";
 import taskRoutes from './routes/taskRoutes.js';
 import leadRoutes from "./routes/leadRoutes.js";
+import employeeRoutes from "./routes/employeeRoutes.js";
 
 
 // Configure environment
@@ -27,6 +28,7 @@ app.use(cookieParser());
 app.use('/api/v1/tasks', taskRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/leads", leadRoutes);
+app.use("/api/v1/employees", employeeRoutes);
 
 app.get("/", (req, res) => {
   res.send({
