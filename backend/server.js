@@ -4,9 +4,9 @@ import connectDB from './config/db.js';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 
-
 //import routes
 import userRoutes from "./routes/userRoutes.js";
+import taskRoutes from './routes/taskRoutes.js';
 import leadRoutes from "./routes/leadRoutes.js";
 
 
@@ -24,6 +24,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Routes
+app.use('/api/v1/tasks', taskRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/leads", leadRoutes);
 
