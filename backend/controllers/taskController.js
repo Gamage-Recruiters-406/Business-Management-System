@@ -5,19 +5,15 @@ import Task from "../models/Task.js";
 // @access  Private
 export const createTask = async (req, res) => {
   try {
-    const { title, description, status, priority, dueDate, assignedTo, tags } =
-      req.body;
+    const { title, description, status, dueDate, assignedTo } = req.body;
 
     // Create task
     const task = await Task.create({
       title,
       description,
       status,
-      priority,
       dueDate,
       assignedTo,
-      tags,
-      createdBy: req.user?._id,
     });
 
     res.status(201).json({
@@ -40,12 +36,11 @@ export const createTask = async (req, res) => {
 // @access  Private
 export const getAllTasks = async (req, res) => {
   try {
-    const { status, priority, assignedTo, page = 1, limit = 10 } = req.query;
+    const { status, assignedTo, page = 1, limit = 10 } = req.query;
 
     // Build filter object
     const filter = {};
     if (status) filter.status = status;
-    if (priority) filter.priority = priority;
     if (assignedTo) filter.assignedTo = assignedTo;
 
     // Pagination
@@ -53,8 +48,7 @@ export const getAllTasks = async (req, res) => {
 
     const tasks = await Task.find(filter)
       .populate("assignedTo", "name email")
-      .populate("createdBy", "name email")
-      .sort({ createdAt: -1 })
+      .sort({ dueDate: 1 })
       .skip(skip)
       .limit(parseInt(limit));
 
@@ -84,8 +78,7 @@ export const getAllTasks = async (req, res) => {
 export const getTaskById = async (req, res) => {
   try {
     const task = await Task.findById(req.params.id)
-      .populate("assignedTo", "name email")
-      .populate("createdBy", "name email");
+      .populate("assignedTo", "name email");
 
     if (!task) {
       return res.status(404).json({
@@ -113,8 +106,7 @@ export const getTaskById = async (req, res) => {
 // @access  Private
 export const updateTask = async (req, res) => {
   try {
-    const { title, description, status, priority, dueDate, assignedTo, tags } =
-      req.body;
+    const { title, description, status, dueDate, assignedTo } = req.body;
 
     const task = await Task.findById(req.params.id);
 
@@ -129,10 +121,8 @@ export const updateTask = async (req, res) => {
     if (title !== undefined) task.title = title;
     if (description !== undefined) task.description = description;
     if (status !== undefined) task.status = status;
-    if (priority !== undefined) task.priority = priority;
     if (dueDate !== undefined) task.dueDate = dueDate;
     if (assignedTo !== undefined) task.assignedTo = assignedTo;
-    if (tags !== undefined) task.tags = tags;
 
     const updatedTask = await task.save();
 
@@ -230,8 +220,7 @@ export const getTasksByUser = async (req, res) => {
   try {
     const tasks = await Task.find({ assignedTo: req.params.userId })
       .populate("assignedTo", "name email")
-      .populate("createdBy", "name email")
-      .sort({ createdAt: -1 });
+      .sort({ dueDate: 1 });
 
     res.status(200).json({
       success: true,
@@ -262,22 +251,12 @@ export const getTaskStats = async (req, res) => {
       },
     ]);
 
-    const priorityStats = await Task.aggregate([
-      {
-        $group: {
-          _id: "$priority",
-          count: { $sum: 1 },
-        },
-      },
-    ]);
-
     const totalTasks = await Task.countDocuments();
 
     res.status(200).json({
       success: true,
       totalTasks,
       statusStats: stats,
-      priorityStats,
     });
   } catch (error) {
     console.error("Error fetching task stats:", error);
