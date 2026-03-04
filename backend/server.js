@@ -7,6 +7,8 @@ import cookieParser from 'cookie-parser';
 //import routes
 import userRoutes from "./routes/userRoutes.js";
 import taskRoutes from './routes/taskRoutes.js';
+import leadRoutes from "./routes/leadRoutes.js";
+
 
 // Configure environment
 dotenv.config();
@@ -24,6 +26,7 @@ app.use(cookieParser());
 // Routes
 app.use('/api/v1/tasks', taskRoutes);
 app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/leads", leadRoutes);
 
 app.get("/", (req, res) => {
   res.send({

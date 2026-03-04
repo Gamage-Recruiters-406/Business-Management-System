@@ -9,7 +9,7 @@ const generateToken = (user) =>
 
 // Register
 export const registerUser = async (req, res) => {
-  const { name, email, password, role, phoneNumber, NIC } = req.body;
+  const { first_name, last_name, email, password, role, phoneNumber, NIC } = req.body;
 
   try {
     if (await User.findOne({ email }))
@@ -18,7 +18,7 @@ export const registerUser = async (req, res) => {
     if (await User.findOne({ NIC }))
       return res.status(400).json({ message: "NIC already exists" });
 
-    const user = await User.create({ name, email, password, role, phoneNumber, NIC });
+    const user = await User.create({ first_name, last_name, email, password, role, phoneNumber, NIC });
 
     res.status(201).json({
       message: "Registration successful",
