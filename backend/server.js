@@ -3,12 +3,15 @@ import cors from 'cors';
 import connectDB from './config/db.js';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
-import taskRoutes from './routes/taskRoutes.js';
 
-const app = express();
+//import routes
+import userRoutes from "./routes/userRoutes.js";
+import taskRoutes from './routes/taskRoutes.js';
 
 // Configure environment
 dotenv.config();
+
+const app = express();
 
 // Database config
 connectDB();
@@ -20,6 +23,7 @@ app.use(cookieParser());
 
 // Routes
 app.use('/api/tasks', taskRoutes);
+app.use("/api/v1/users", userRoutes);
 
 app.get("/", (req, res) => {
   res.send({
