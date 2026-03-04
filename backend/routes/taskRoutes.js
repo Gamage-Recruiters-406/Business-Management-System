@@ -9,21 +9,26 @@ import {
   getTasksByUser,
   getTaskStats,
 } from "../controllers/taskController.js";
+import { requiredSignIn, isAdmin } from "../middlewares/AuthMiddleware.js";
 
 const router = express.Router();
 
 // Task statistics route (place before :id routes to avoid conflicts)
-router.get("/stats", getTaskStats);
+router.get("/stats", requiredSignIn, getTaskStats);
 
 // Get tasks by user
-router.get("/user/:userId", getTasksByUser);
+router.get("/user/:userId", requiredSignIn, getTasksByUser);
 
 // CRUD routes
-router.route("/").get(getAllTasks).post(createTask);
+router.route("/").get(requiredSignIn, getAllTasks).post(requiredSignIn, isAdmin, createTask);
 
-router.route("/:id").get(getTaskById).put(updateTask).delete(deleteTask);
+router
+  .route("/:id")
+  .get(requiredSignIn, getTaskById)
+  .put(requiredSignIn, isAdmin, updateTask)
+  .delete(requiredSignIn, isAdmin, deleteTask);
 
 // Update task status
-router.patch("/:id/status", updateTaskStatus);
+router.patch("/:id/status", requiredSignIn, isAdmin, updateTaskStatus);
 
 export default router;

@@ -25,15 +25,15 @@ const taskSchema = new mongoose.Schema(
     dueDate: {
       type: Date,
     },
+    leadId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Lead",
+    },
   },
   {
     timestamps: true,
   }
 );
-
-// Index for better query performance
-taskSchema.index({ status: 1 });
-taskSchema.index({ assignedTo: 1 });
 
 const Task = mongoose.model("Task", taskSchema);
 
