@@ -1,9 +1,21 @@
 import mongoose from "mongoose";
-import bcrypt from "bcryptjs"; // ✅ use bcryptjs
+import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true, trim: true, maxlength: 50 },
+    first_name: { 
+      type: String, 
+      required: true, 
+      trim: true, 
+      maxlength: 50 
+    },
+    last_name: { 
+      type: String, 
+      required: true, 
+      trim: true, 
+      maxlength: 50 
+    },
+
     email: {
       type: String,
       required: true,
@@ -12,13 +24,23 @@ const userSchema = new mongoose.Schema(
       trim: true,
       match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, "Invalid email"],
     },
-    password: { type: String, required: true, minlength: 6 },
-    role: { type: String, enum: ["admin", "employee"], default: "employee" },
+
+    password: { type: String, 
+      required: true, 
+      minlength: 6 
+    },
+
+    role: { type: String, 
+      enum: ["admin", "employee"], 
+      default: "employee" 
+    },
+    
     phoneNumber: {
       type: String,
       required: true,
       match: [/^\+?\d{10,15}$/, "Invalid phone number"],
     },
+    
     NIC: {
       type: String,
       required: true,
@@ -32,7 +54,7 @@ const userSchema = new mongoose.Schema(
 // Hash password before saving
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
-  const salt = bcrypt.genSaltSync(10); // bcryptjs uses sync or async
+  const salt = bcrypt.genSaltSync(10);
   this.password = bcrypt.hashSync(this.password, salt);
 });
 
