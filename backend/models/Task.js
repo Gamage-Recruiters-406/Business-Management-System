@@ -1,30 +1,35 @@
 import mongoose from "mongoose";
 
-const taskSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: [true, "Task title is required"],
-    trim: true,
-    maxlength: [200, "Task title cannot exceed 200 characters"],
+const taskSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: [true, "Task title is required"],
+      trim: true,
+      maxlength: [200, "Task title cannot exceed 200 characters"],
+    },
+    description: {
+      type: String,
+      trim: true,
+      maxlength: [1000, "Description cannot exceed 1000 characters"],
+    },
+    assignedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    status: {
+      type: String,
+      enum: ["pending", "in-progress", "completed", "cancelled"],
+      default: "pending",
+    },
+    dueDate: {
+      type: Date,
+    },
   },
-  description: {
-    type: String,
-    trim: true,
-    maxlength: [1000, "Description cannot exceed 1000 characters"],
-  },
-  assignedTo: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  },
-  status: {
-    type: String,
-    enum: ["pending", "in-progress", "completed", "cancelled"],
-    default: "pending",
-  },
-  dueDate: {
-    type: Date,
-  },
-});
+  {
+    timestamps: true,
+  }
+);
 
 // Index for better query performance
 taskSchema.index({ status: 1 });
