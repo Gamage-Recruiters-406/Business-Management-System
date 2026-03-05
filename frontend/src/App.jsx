@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import EmployeeManagement from "./pages/EmployeeManagement";
 import TaskManagement from "./pages/TaskManagement";
 import "./App.css";
+import LeadManagement from "./pages/LeadManagement";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/employees" element={<EmployeeManagement />} />
         <Route path="/tasks" element={<TaskManagement />} />
+        <Route path="/leads" element={<LeadManagement />} />
       </Routes>
     </BrowserRouter>
   );
