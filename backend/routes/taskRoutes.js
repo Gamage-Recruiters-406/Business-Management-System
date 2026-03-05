@@ -29,6 +29,6 @@ router
   .delete(requiredSignIn, isAdmin, deleteTask);
 
 // Update task status
-router.patch("/:id/status", requiredSignIn, isAdmin, updateTaskStatus);
+router.patch("/status/:id", requiredSignIn, isAdmin, updateTaskStatus);
 
 export default router;
