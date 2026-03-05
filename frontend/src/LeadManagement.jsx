@@ -197,7 +197,7 @@ const LeadManagement = () => {
                         <tr key={lead.id} className="hover:bg-gray-50 transition-colors duration-200">
                             <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                                <div className={`flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 ${avatarStyle.bg} rounded-full flex items-center justify-center`}>
+                                <div className={`shrink-0 h-8 w-8 sm:h-10 sm:w-10 ${avatarStyle.bg} rounded-full flex items-center justify-center`}>
                                 <span className={`font-medium text-xs sm:text-sm ${avatarStyle.text}`}>{getInitials(lead.name)}</span>
                                 </div>
                                 <div className="ml-4">
