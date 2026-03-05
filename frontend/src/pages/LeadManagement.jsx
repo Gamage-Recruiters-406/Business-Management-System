@@ -170,8 +170,8 @@ const LeadManagement = () => {
                     </div>
                   </th>
                   <th className="px-16 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                  <th className="px-16 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                  <th className="hidden sm:table-cell px-16 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-10 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                  <th className="hidden sm:table-cell px-8 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <div className="flex items-center gap-2 cursor-pointer group" onClick={() => handleSort('created')}>
                       Created Date
                       <svg className={`h-4 w-4 transition-transform ${sortConfig.key === 'created' ? (sortConfig.direction === 'asc' ? 'rotate-180' : '') : ''} group-hover:opacity-75`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -179,7 +179,7 @@ const LeadManagement = () => {
                       </svg>
                     </div>
                   </th>
-                  <th className="px-16 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-10 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <div className="flex items-center gap-2 cursor-pointer group" onClick={() => handleSort('status')}>
                       Status
                       <svg className={`h-4 w-4 transition-transform ${sortConfig.key === 'status' ? (sortConfig.direction === 'asc' ? 'rotate-180' : '') : ''} group-hover:opacity-75`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
