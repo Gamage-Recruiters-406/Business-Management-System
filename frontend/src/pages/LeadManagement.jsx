@@ -109,7 +109,7 @@ const LeadManagement = () => {
           </div>
         </div>
         <div className="flex items-center justify-end mb-8">
-            <button className="bg-blue-600 text-white px-4 py-1 sm:px-6 sm:py-2.5 rounded-lg font-small md:font-medium hover:bg-blue-700 transition-colors w-xl sm:w-auto text-center">
+            <button className="bg-blue-600 text-white px-4 py-1 sm:px-6 sm:py-2.5 rounded-lg font-small md:font-medium hover:bg-blue-700 transition-colors sm:w-auto text-center">
                 + New Lead
             </button>
         </div>
