@@ -1,10 +1,10 @@
 import React from "react";
 
 const STATUS_CONFIG = {
+  Pending: "bg-yellow-100 text-yellow-700",
   "In Progress": "bg-blue-100 text-blue-700",
-  Review: "bg-amber-100 text-amber-700",
   Completed: "bg-green-100 text-green-700",
-  Todo: "bg-gray-100 text-gray-600",
+  Cancelled: "bg-red-100 text-red-600",
 };
 
 export default function StatusBadge({ status }) {

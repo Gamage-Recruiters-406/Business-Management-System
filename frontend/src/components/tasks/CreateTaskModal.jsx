@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { X, ChevronDown } from "lucide-react";
+import {
+  X,
+  ChevronDown,
+  Search,
+  Plus,
+  Clock,
+  RefreshCw,
+  XCircle,
+  CheckCircle2,
+} from "lucide-react";
 
 const ASSIGNEE_OPTIONS = [
   "John Doe",
@@ -10,14 +19,21 @@ const ASSIGNEE_OPTIONS = [
   "Ryan Parker",
   "Olivia Chen",
 ];
-const STATUS_OPTIONS = ["Todo", "In Progress", "Review", "Completed"];
+const STATUS_OPTIONS = ["Pending", "In Progress", "Completed", "Cancelled"];
 const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Critical"];
+
+const STATUS_ICONS = {
+  Pending: Clock,
+  "In Progress": RefreshCw,
+  Completed: CheckCircle2,
+  Cancelled: XCircle,
+};
 
 const EMPTY_FORM = {
   title: "",
   description: "",
   assignee: "",
-  status: "Todo",
+  status: "Pending",
   dueDate: "",
   priority: "Medium",
 };
@@ -76,7 +92,7 @@ export default function CreateTaskModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl my-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg my-4">
         {/* Modal Header */}
         <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-start">
           <div>
@@ -86,7 +102,7 @@ export default function CreateTaskModal({
             <p className="text-sm text-slate-500 mt-1">
               {editTask
                 ? "Update the task details below."
-                : "Add a new task to your project board."}
+                : "Fill in the details to assign a new task to your team."}
             </p>
           </div>
           <button
@@ -98,74 +114,61 @@ export default function CreateTaskModal({
         </div>
 
         {/* Form */}
-        <div className="p-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            {/* Title */}
-            <div className="space-y-1.5 sm:col-span-2">
-              <label className="text-sm font-semibold text-slate-800">
-                Task Title <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Fix login bug on Safari"
-                value={form.title}
-                onChange={(e) => field("title", e.target.value)}
-                className={`w-full px-4 py-2.5 rounded-lg border text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  errors.title ? "border-red-400 bg-red-50" : "border-slate-200"
-                }`}
-              />
-              {errors.title && (
-                <p className="text-xs text-red-500">{errors.title}</p>
-              )}
-            </div>
+        <div className="px-6 pt-5 pb-2 space-y-5">
+          {/* Task Title */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-semibold text-slate-800">
+              Task Title
+            </label>
+            <input
+              type="text"
+              placeholder="Enter task headline"
+              value={form.title}
+              onChange={(e) => field("title", e.target.value)}
+              className={`w-full px-4 py-3 rounded-xl border text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
+                errors.title
+                  ? "border-red-400 bg-red-50"
+                  : "border-slate-200 bg-slate-50 hover:border-slate-300"
+              }`}
+            />
+            {errors.title && (
+              <p className="text-xs text-red-500">{errors.title}</p>
+            )}
+          </div>
 
-            {/* Description */}
-            <div className="space-y-1.5 sm:col-span-2">
-              <label className="text-sm font-semibold text-slate-800">
-                Description
-              </label>
-              <textarea
-                placeholder="Describe what needs to be done..."
-                value={form.description}
-                onChange={(e) => field("description", e.target.value)}
-                rows={3}
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-700 placeholder:text-slate-400 resize-none"
-              />
-            </div>
+          {/* Description */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-semibold text-slate-800">
+              Description
+            </label>
+            <textarea
+              placeholder="Provide detailed instructions..."
+              value={form.description}
+              onChange={(e) => field("description", e.target.value)}
+              rows={4}
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-700 placeholder:text-slate-400 resize-none transition-colors"
+            />
+          </div>
 
+          {/* Assignee + Due Date */}
+          <div className="grid grid-cols-2 gap-4">
             {/* Assignee */}
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-slate-800">
                 Assignee
               </label>
               <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
                 <select
                   value={form.assignee}
                   onChange={(e) => field("assignee", e.target.value)}
-                  className="w-full appearance-none px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-slate-700 bg-white"
+                  className="w-full appearance-none pl-9 pr-8 py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-slate-500 transition-colors"
                 >
-                  <option value="">Select assignee</option>
+                  <option value="">Select team member...</option>
                   {ASSIGNEE_OPTIONS.map((a) => (
-                    <option key={a}>{a}</option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Status */}
-            <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-800">
-                Status
-              </label>
-              <div className="relative">
-                <select
-                  value={form.status}
-                  onChange={(e) => field("status", e.target.value)}
-                  className="w-full appearance-none px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-slate-700 bg-white"
-                >
-                  {STATUS_OPTIONS.map((s) => (
-                    <option key={s}>{s}</option>
+                    <option key={a} className="text-slate-700">
+                      {a}
+                    </option>
                   ))}
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
@@ -181,43 +184,72 @@ export default function CreateTaskModal({
                 type="date"
                 value={form.dueDate}
                 onChange={(e) => field("dueDate", e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-slate-700"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-slate-700 transition-colors"
               />
             </div>
+          </div>
 
-            {/* Priority */}
-            <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-800">
-                Priority
-              </label>
-              <div className="relative">
-                <select
-                  value={form.priority}
-                  onChange={(e) => field("priority", e.target.value)}
-                  className="w-full appearance-none px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-slate-700 bg-white"
-                >
-                  {PRIORITY_OPTIONS.map((p) => (
-                    <option key={p}>{p}</option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-              </div>
+          {/* Status toggle buttons */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-slate-800">
+              Status
+            </label>
+            <div className="flex gap-2">
+              {STATUS_OPTIONS.map((s) => {
+                const Icon = STATUS_ICONS[s];
+                const isSelected = form.status === s;
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => field("status", s)}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border text-xs font-medium transition-all ${
+                      isSelected
+                        ? "border-blue-500 text-blue-600 bg-white shadow-sm"
+                        : "border-slate-200 text-slate-500 bg-white hover:border-slate-300 hover:text-slate-700"
+                    }`}
+                  >
+                    <Icon className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">{s}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Priority */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-semibold text-slate-800">
+              Priority
+            </label>
+            <div className="relative">
+              <select
+                value={form.priority}
+                onChange={(e) => field("priority", e.target.value)}
+                className="w-full appearance-none px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-slate-700 transition-colors"
+              >
+                {PRIORITY_OPTIONS.map((p) => (
+                  <option key={p}>{p}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 flex justify-end gap-3 border-t border-slate-100">
+        <div className="px-6 py-4 mt-2 flex justify-end gap-3 border-t border-slate-100">
           <button
             onClick={onClose}
-            className="px-5 py-2.5 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
+            className="px-5 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
-            className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm"
           >
+            <Plus className="h-4 w-4" />
             {editTask ? "Save Changes" : "Create Task"}
           </button>
         </div>
