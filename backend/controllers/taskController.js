@@ -5,8 +5,8 @@ import Task from "../models/Task.js";
 // @access  Private
 export const createTask = async (req, res) => {
   try {
-    const { title, description, status, dueDate, assignedTo } = req.body;
-    const leadId = req.user?._id || req.body?.leadId;
+    const { title, description, status, dueDate, assignedTo, leadId } =
+      req.body;
 
     // Create task
     const task = await Task.create({
@@ -49,7 +49,8 @@ export const getAllTasks = async (req, res) => {
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     const tasks = await Task.find(filter)
-      .populate("assignedTo", "name email")
+      .populate("assignedTo", "firstName lastName email")
+      .populate("leadId", "name email")
       .sort({ dueDate: 1 })
       .skip(skip)
       .limit(parseInt(limit));
@@ -80,7 +81,8 @@ export const getAllTasks = async (req, res) => {
 export const getTaskById = async (req, res) => {
   try {
     const task = await Task.findById(req.params.id)
-      .populate("assignedTo", "name email");
+      .populate("assignedTo", "firstName lastName email")
+      .populate("leadId", "name email");
 
     if (!task) {
       return res.status(404).json({
@@ -108,7 +110,8 @@ export const getTaskById = async (req, res) => {
 // @access  Private
 export const updateTask = async (req, res) => {
   try {
-    const { title, description, status, dueDate, assignedTo } = req.body;
+    const { title, description, status, dueDate, assignedTo, leadId } =
+      req.body;
 
     const task = await Task.findById(req.params.id);
 
@@ -125,6 +128,7 @@ export const updateTask = async (req, res) => {
     if (status !== undefined) task.status = status;
     if (dueDate !== undefined) task.dueDate = dueDate;
     if (assignedTo !== undefined) task.assignedTo = assignedTo;
+    if (leadId !== undefined) task.leadId = leadId;
 
     const updatedTask = await task.save();
 
@@ -180,7 +184,9 @@ export const updateTaskStatus = async (req, res) => {
   try {
     const { status } = req.body;
 
-    if (!["pending", "in-progress", "completed", "cancelled"].includes(status)) {
+    if (
+      !["pending", "in-progress", "completed", "cancelled"].includes(status)
+    ) {
       return res.status(400).json({
         success: false,
         message: "Invalid status value",
@@ -190,7 +196,7 @@ export const updateTaskStatus = async (req, res) => {
     const task = await Task.findByIdAndUpdate(
       req.params.id,
       { status },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!task) {
@@ -221,7 +227,8 @@ export const updateTaskStatus = async (req, res) => {
 export const getTasksByUser = async (req, res) => {
   try {
     const tasks = await Task.find({ assignedTo: req.params.userId })
-      .populate("assignedTo", "name email")
+      .populate("assignedTo", "firstName lastName email")
+      .populate("leadId", "name email")
       .sort({ dueDate: 1 });
 
     res.status(200).json({
