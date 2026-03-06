@@ -17,6 +17,13 @@ const CARDS = [
     description: "Organise, track, and manage your team tasks efficiently.",
     color: "blue",
   },
+  {
+    to: "/dashboard",
+    icon: ClipboardList,
+    label: "Dashboard",
+    description: "View an overview of your business metrics and performance.",
+    color: "purple",
+  },
 ];
 
 const COLOR = {
@@ -29,6 +36,11 @@ const COLOR = {
     icon: "bg-blue-100 text-blue-600",
     btn: "bg-blue-600 hover:bg-blue-700",
     border: "hover:border-blue-300",
+  },
+  purple: {
+    icon: "bg-purple-100 text-purple-600",
+    btn: "bg-purple-600 hover:bg-purple-700",
+    border: "hover:border-purple-300",
   },
 };
 
