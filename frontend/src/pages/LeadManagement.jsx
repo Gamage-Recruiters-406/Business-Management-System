@@ -1,18 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Edit2, Trash2 } from 'lucide-react';
+import axios from 'axios';
 import AddLeadModal from '../components/lead/AddLeadModal';
 import EditLeadModal from '../components/lead/EditLeadModal';
 
 const LeadManagement = () => {
-  const [leads, setLeads] = useState([
-    { id: 1, name: 'John Doe', email: 'john@test.com', phone: '+1 234 567', created: '2023-01-10', status: 'New' },
-    { id: 2, name: 'Jane Smith', email: 'jane@global.com', phone: '+1 987 321', created: '2023-01-18', status: 'Contacted' },
-    { id: 3, name: 'Robert Brown', email: 'robert@stat.com', phone: '+1 555 444', created: '2023-02-11', status: 'Converted' },
-    { id: 4, name: 'Emily Davis', email: 'emily@flow.net', phone: '+1 333 999', created: '2023-02-20', status: 'New' },
-    { id: 5, name: 'Michael Wilson', email: 'michael@locale.com', phone: '+1 777 222', created: '2023-03-05', status: 'Contacted' },
-    { id: 6, name: 'Sarah Wilson', email: 'sarah@novate.com', phone: '+1 456 789', created: '2023-10-10', status: 'Contacted' },
-  ]);
-
+  const [leads, setLeads] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
@@ -20,9 +13,12 @@ const LeadManagement = () => {
   const [openModal, setOpenModal] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [leadToDelete, setLeadToDelete] = useState(null);
   const itemsPerPage = 5;
 
   const statusOptions = ['All', 'New', 'Contacted', 'Converted'];
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   const filteredLeads = useMemo(() => {
     let filtered = leads.filter(lead =>
@@ -92,6 +88,23 @@ const LeadManagement = () => {
     }
   };
 
+  const fetchLeads = async () => {
+    try {
+      const res = await axios.get(
+        `${API_BASE_URL}/leads/all`,
+        {withCredentials:true}
+      )
+      setLeads(res.data || []);
+      console.log("Response :", res.data);
+    } catch (error) {
+      console.error("Failed to fetch leads", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchLeads();
+  }, []);
+
   const handleUpdateLead = (updatedLead) => {
 
     const updatedLeads = leads.map((l) =>
@@ -99,6 +112,29 @@ const LeadManagement = () => {
     );
   
     setLeads(updatedLeads);
+  };
+
+  const handleDeleteLead = async (id) => {
+    try {
+      await axios.delete(`${API_BASE_URL}/leads/delete/${id}`, {
+        withCredentials: true, // sends cookies/session info
+      });
+      setLeads(leads.filter((lead) => lead.id !== id));
+    } catch (error) {
+      console.error("Error deleting lead:", error);
+    }
+  };
+
+  const handleAddLead = async (newLead) => {
+    try {
+      const res = await axios.post(`${API_BASE_URL}/leads/create`, newLead, {
+        withCredentials: true,
+      });
+      // Add the returned lead to state
+      setLeads([...leads, res.data]);
+    } catch (error) {
+      console.error("Error adding lead:", error);
+    }
   };
 
   
@@ -131,6 +167,7 @@ const LeadManagement = () => {
             <AddLeadModal
                 isOpen={openModal}
                 onClose={() => setOpenModal(false)}
+                onAdd={handleAddLead}
             />
         </div>
 
@@ -241,7 +278,12 @@ const LeadManagement = () => {
                                   className="text-blue-800 hover:text-blue-950 p-2 rounded">
                                     <Edit2 size={18} />
                                 </button>
-                                <button className="text-red-400 hover:text-red-800 p-2 rounded">
+                                <button 
+                                  onClick={() => {
+                                    setLeadToDelete(lead);
+                                    setDeleteModalOpen(true);
+                                  }}
+                                  className="text-red-400 hover:text-red-800 p-2 rounded">
                                     <Trash2 size={18} />
                                 </button>
 
@@ -303,6 +345,33 @@ const LeadManagement = () => {
           )}
         </div>
       </div>
+      {deleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-lg p-6 w-96 shadow-lg">
+            <h2 className="text-lg font-semibold mb-4">Confirm Delete</h2>
+            <p className="mb-6">
+              Are you sure you want to delete <span className="font-medium">{leadToDelete?.name}</span>?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setDeleteModalOpen(false)}
+                className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  handleDeleteLead(leadToDelete.id);
+                  setDeleteModalOpen(false);
+                }}
+                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
