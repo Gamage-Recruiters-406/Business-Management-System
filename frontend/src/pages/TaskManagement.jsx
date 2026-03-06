@@ -14,6 +14,8 @@ import {
 import StatusBadge from "../components/tasks/StatusBadge";
 import Pagination from "../components/tasks/Pagination";
 import CreateTaskModal from "../components/tasks/CreateTaskModal";
+import DeleteConfirmModal from "../components/tasks/DeleteConfirmModal";
+import Toast from "../components/tasks/Toast";
 
 // ─── Static seed data ────────────────────────────────────────────────────────
 
@@ -141,11 +143,11 @@ const TEMPLATES = [
 
 const STATUSES = [
   "In Progress",
-  "Review",
+  "Pending",
   "Completed",
-  "Todo",
+  "Cancelled",
   "In Progress",
-  "Todo",
+  "Pending",
 ];
 const PRIORITIES = ["Medium", "High", "Low", "Critical", "Medium", "High"];
 const DUE_DATES = [
@@ -207,6 +209,8 @@ export default function TaskManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+  const [deletingTask, setDeletingTask] = useState(null);
+  const [toast, setToast] = useState(null);
 
   // Unique assignee names for the filter dropdown
   const uniqueAssignees = useMemo(
@@ -323,10 +327,21 @@ export default function TaskManagement() {
     }
   };
 
-  const handleDelete = (taskId) => {
-    if (window.confirm("Delete this task? This action cannot be undone.")) {
-      setTasks((prev) => prev.filter((t) => t.id !== taskId));
-    }
+  const handleDelete = (task) => {
+    setDeletingTask(task);
+  };
+
+  const confirmDelete = () => {
+    setTasks((prev) => prev.filter((t) => t.id !== deletingTask.id));
+    setToast({
+      message: "Task deleted",
+      subMessage: "The task has been permanently removed.",
+    });
+    setDeletingTask(null);
+  };
+
+  const cancelDelete = () => {
+    setDeletingTask(null);
   };
 
   const handleExport = () => {
@@ -422,10 +437,10 @@ export default function TaskManagement() {
                   className="appearance-none pl-9 pr-8 py-2 rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-slate-700 cursor-pointer"
                 >
                   <option value="All">Status: All</option>
+                  <option>Pending</option>
                   <option>In Progress</option>
-                  <option>Review</option>
                   <option>Completed</option>
-                  <option>Todo</option>
+                  <option>Cancelled</option>
                 </select>
                 <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
               </div>
@@ -554,7 +569,7 @@ export default function TaskManagement() {
                             <Pencil className="h-4 w-4" />
                           </button>
                           <button
-                            onClick={() => handleDelete(task.id)}
+                            onClick={() => handleDelete(task)}
                             title="Delete task"
                             className="p-1.5 rounded-md hover:bg-red-50 hover:text-red-600 transition-colors"
                           >
@@ -587,6 +602,20 @@ export default function TaskManagement() {
         onSubmit={handleTaskSubmit}
         editTask={editingTask}
       />
+
+      <DeleteConfirmModal
+        task={deletingTask}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          subMessage={toast.subMessage}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }
