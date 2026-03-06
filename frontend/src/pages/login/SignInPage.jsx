@@ -44,9 +44,9 @@ export default function SignInPage() {
       localStorage.setItem("userData", JSON.stringify(data.user));
 
       if (data.user.role === "admin") {
-        navigate("/admin/dashboard");
+        navigate("/");
       } else {
-        navigate("/employee/dashboard");
+        navigate("/employees");
       }
     } catch (err) {
       setApiError("Network error. Please try again.");
