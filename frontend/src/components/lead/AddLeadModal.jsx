@@ -20,8 +20,16 @@ export default function AddLeadModal({ isOpen, onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    onAdd(lead);
     console.log(lead);
     onClose();
+    setLead({
+      name: "",
+      email: "",
+      phone: "",
+      date: "",
+      status: "New",
+    });
   };
 
   if (!isOpen) return null;
