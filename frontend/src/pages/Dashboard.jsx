@@ -25,17 +25,17 @@ const TasklyDashboard = () => {
         const [leadsRes, tasksRes, employeesRes] = await Promise.all([
             axios.get(`${import.meta.env.VITE_API_BASE_URL}/leads/all`, config),
             axios.get(`${import.meta.env.VITE_API_BASE_URL}/tasks`, config),
-            axios.get(`${import.meta.env.VITE_API_BASE_URL}/employees/stats`, config) // නිවැරදි endpoint එක
+            axios.get(`${import.meta.env.VITE_API_BASE_URL}/employees/stats`, config) 
         ]);
         console.log("Leads Response:", leadsRes.data);
         const rawTasks = tasksRes.data.tasks || [];
         const total = rawTasks.length;
 
-        // Pie Chart සඳහා දත්ත සැකසීම
+        // Pie Chart 
         const chartData = [
-          { name: 'In Progress', value: rawTasks.filter(t => t.status === 'in-progress').length, percentage: total ? Math.round((rawTasks.filter(t => t.status === 'in-progress').length / total) * 100) : 0 },
-          { name: 'Completed', value: rawTasks.filter(t => t.status === 'completed').length, percentage: total ? Math.round((rawTasks.filter(t => t.status === 'completed').length / total) * 100) : 0 },
-          { name: 'Pending', value: rawTasks.filter(t => t.status === 'pending').length, percentage: total ? Math.round((rawTasks.filter(t => t.status === 'pending').length / total) * 100) : 0 }
+          { name: 'In Progress Tasks', value: rawTasks.filter(t => t.status === 'in-progress').length, percentage: total ? Math.round((rawTasks.filter(t => t.status === 'in-progress').length / total) * 100) : 0 },
+          { name: 'Completed Tasks', value: rawTasks.filter(t => t.status === 'completed').length, percentage: total ? Math.round((rawTasks.filter(t => t.status === 'completed').length / total) * 100) : 0 },
+          { name: 'Pending Tasks', value: rawTasks.filter(t => t.status === 'pending').length, percentage: total ? Math.round((rawTasks.filter(t => t.status === 'pending').length / total) * 100) : 0 }
         ];
 
         setDashboardData({
@@ -77,14 +77,14 @@ const TasklyDashboard = () => {
             icon: Users 
           },
           { 
-            title: 'Pending', 
+            title: 'Pending Tasks', 
             value: (dashboardData?.tasks?.filter(t => t.status === 'pending').length || 0).toString(), 
             color: '#ea580c', 
             bg: 'bg-orange-50', 
             icon: Clock 
           },
           { 
-            title: 'Completed', 
+            title: 'Completed Tasks', 
             value: (dashboardData?.tasks?.filter(t => t.status === 'completed').length || 0).toString(), 
             color: '#16a34a', 
             bg: 'bg-green-50', 

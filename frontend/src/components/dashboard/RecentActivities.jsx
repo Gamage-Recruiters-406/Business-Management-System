@@ -24,6 +24,7 @@ const RecentActivities = ({ tasks }) => (
             <tr key={idx} className="hover:bg-blue-50/20 transition-all duration-200 cursor-pointer group">
               <td className="px-8 py-5">
                 <div className="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition-colors">{task.name}</div>
+                <div className="text-xs text-slate-500 mt-1">{task.description}</div>
               </td>
               <td className="px-8 py-5">
                 <div className="flex items-center gap-3">
