@@ -385,12 +385,7 @@ const LeadManagement = () => {
                                     <Trash2 size={18} />
                                 </button>
 
-                                <EditLeadModal
-                                  isOpen={editOpen}
-                                  onClose={() => setEditOpen(false)}
-                                  lead={selectedLead}
-                                  onUpdate={handleUpdateLead}
-                                />
+                               
                             </div>
                             </td>
                         </tr>
@@ -398,6 +393,12 @@ const LeadManagement = () => {
                 })}
               </tbody>
             </table>
+            <EditLeadModal
+              isOpen={editOpen}
+              onClose={() => setEditOpen(false)}
+              lead={selectedLead}
+              onUpdate={handleUpdateLead}
+            />
           </div>
 
           {/* Pagination */}
