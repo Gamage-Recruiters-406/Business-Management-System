@@ -2,50 +2,31 @@ import React, { useState, useEffect } from 'react';
 import { Search, ChevronDown, Filter, Edit2, Trash2, X, UploadCloud, ChevronLeft, ChevronRight, Moon } from 'lucide-react';
 import Swal from 'sweetalert2';
 
-const INITIAL_EMPLOYEES = [
-  { id: '#EMP-001', name: 'Sarah Connor', email: 'sarah.c@company.com', phone: '+1 555-010-9283', role: 'Admin', hireDate: 'Jan 12, 2022', status: 'Active', avatar: 'https://i.pravatar.cc/150?u=1' },
-  { id: '#EMP-002', name: 'Michael Chen', email: 'm.chen@company.com', phone: '+1 555-010-9284', role: 'Manager', hireDate: 'Mar 05, 2022', status: 'Active', avatar: 'https://i.pravatar.cc/150?u=2' },
-  { id: '#EMP-003', name: 'Lindsay Walton', email: 'l.walton@company.com', phone: '+1 555-010-9285', role: 'Developer', hireDate: 'Jun 15, 2022', status: 'Inactive', avatar: 'https://i.pravatar.cc/150?u=3' },
-  { id: '#EMP-004', name: 'Courtney Henry', email: 'c.henry@company.com', phone: '+1 555-010-9286', role: 'Developer', hireDate: 'Aug 22, 2022', status: 'Active', avatar: 'https://i.pravatar.cc/150?u=4' },
-  { id: '#EMP-005', name: 'Tom Cook', email: 't.cook@company.com', phone: '+1 555-010-9287', role: 'Developer', hireDate: 'Oct 01, 2022', status: 'Active', avatar: 'https://i.pravatar.cc/150?u=5' },
-  { id: '#EMP-006', name: 'Whitney Francis', email: 'w.francis@company.com', phone: '+1 555-010-9288', role: 'Manager', hireDate: 'Nov 18, 2022', status: 'Active', avatar: 'https://i.pravatar.cc/150?u=6' },
-  { id: '#EMP-007', name: 'Leonard Krasner', email: 'l.krasner@company.com', phone: '+1 555-010-9289', role: 'Developer', hireDate: 'Jan 05, 2023', status: 'Inactive', avatar: 'https://i.pravatar.cc/150?u=7' },
-  { id: '#EMP-008', name: 'Floyd Miles', email: 'f.miles@company.com', phone: '+1 555-010-9290', role: 'Developer', hireDate: 'Feb 14, 2023', status: 'Active', avatar: 'https://i.pravatar.cc/150?u=8' },
-  { id: '#EMP-009', name: 'Emily Johnson', email: 'e.johnson@company.com', phone: '+1 555-010-9291', role: 'Admin', hireDate: 'Mar 20, 2023', status: 'Active', avatar: 'https://i.pravatar.cc/150?u=9' },
-  { id: '#EMP-010', name: 'David Kim', email: 'd.kim@company.com', phone: '+1 555-010-9292', role: 'Developer', hireDate: 'Apr 05, 2023', status: 'Active', avatar: 'https://i.pravatar.cc/150?u=10' },
-  { id: '#EMP-011', name: 'Maria Garcia', email: 'm.garcia@company.com', phone: '+1 555-010-9293', role: 'Manager', hireDate: 'May 12, 2023', status: 'Active', avatar: 'https://i.pravatar.cc/150?u=11' },
-  { id: '#EMP-012', name: 'James Wilson', email: 'j.wilson@company.com', phone: '+1 555-010-9294', role: 'Developer', hireDate: 'Jun 18, 2023', status: 'Inactive', avatar: 'https://i.pravatar.cc/150?u=12' },
-  { id: '#EMP-013', name: 'Lisa Anderson', email: 'l.anderson@company.com', phone: '+1 555-010-9295', role: 'Admin', hireDate: 'Jul 22, 2023', status: 'Active', avatar: 'https://i.pravatar.cc/150?u=13' },
-  { id: '#EMP-014', name: 'Robert Taylor', email: 'r.taylor@company.com', phone: '+1 555-010-9296', role: 'Manager', hireDate: 'Aug 30, 2023', status: 'Active', avatar: 'https://i.pravatar.cc/150?u=14' },
-  { id: '#EMP-015', name: 'Patricia Moore', email: 'p.moore@company.com', phone: '+1 555-010-9297', role: 'Developer', hireDate: 'Sep 14, 2023', status: 'Active', avatar: 'https://i.pravatar.cc/150?u=15' },
-  { id: '#EMP-016', name: 'Kevin Brown', email: 'k.brown@company.com', phone: '+1 555-010-9298', role: 'Developer', hireDate: 'Oct 01, 2023', status: 'Active', avatar: 'https://i.pravatar.cc/150?u=16' },
-  { id: '#EMP-017', name: 'Nancy Davis', email: 'n.davis@company.com', phone: '+1 555-010-9299', role: 'Manager', hireDate: 'Nov 11, 2023', status: 'Inactive', avatar: 'https://i.pravatar.cc/150?u=17' },
-  { id: '#EMP-018', name: 'Steven Miller', email: 's.miller@company.com', phone: '+1 555-010-9300', role: 'Developer', hireDate: 'Dec 05, 2023', status: 'Active', avatar: 'https://i.pravatar.cc/150?u=18' },
-  { id: '#EMP-019', name: 'Karen White', email: 'k.white@company.com', phone: '+1 555-010-9301', role: 'Admin', hireDate: 'Jan 15, 2024', status: 'Active', avatar: 'https://i.pravatar.cc/150?u=19' },
-  { id: '#EMP-020', name: 'Thomas Lee', email: 't.lee@company.com', phone: '+1 555-010-9302', role: 'Manager', hireDate: 'Feb 20, 2024', status: 'Active', avatar: 'https://i.pravatar.cc/150?u=20' },
-  { id: '#EMP-021', name: 'Jennifer Clark', email: 'j.clark@company.com', phone: '+1 555-010-9303', role: 'Developer', hireDate: 'Mar 08, 2024', status: 'Active', avatar: 'https://i.pravatar.cc/150?u=21' },
-  { id: '#EMP-022', name: 'Charles Lewis', email: 'c.lewis@company.com', phone: '+1 555-010-9304', role: 'Developer', hireDate: 'Apr 17, 2024', status: 'Inactive', avatar: 'https://i.pravatar.cc/150?u=22' },
-  { id: '#EMP-023', name: 'Susan Walker', email: 's.walker@company.com', phone: '+1 555-010-9305', role: 'Manager', hireDate: 'May 23, 2024', status: 'Active', avatar: 'https://i.pravatar.cc/150?u=23' },
-  { id: '#EMP-024', name: 'Daniel Hall', email: 'd.hall@company.com', phone: '+1 555-010-9306', role: 'Developer', hireDate: 'Jun 30, 2024', status: 'Active', avatar: 'https://i.pravatar.cc/150?u=24' },
-  { id: '#EMP-025', name: 'Betty Young', email: 'b.young@company.com', phone: '+1 555-010-9307', role: 'Admin', hireDate: 'Jul 12, 2024', status: 'Active', avatar: 'https://i.pravatar.cc/150?u=25' },
-];
+const API_BASE_URL = 'http://localhost:8085/api/v1/employees';
 
 const RoleBadge = ({ role }) => {
+  const roleLower = role?.toLowerCase() || '';
   const styles = {
-    Admin: 'bg-purple-100 text-purple-700',
-    Manager: 'bg-blue-100 text-blue-700',
-    Developer: 'bg-green-100 text-green-700',
+    manager: 'bg-blue-100 text-blue-700',
+    developer: 'bg-green-100 text-green-700',
+    sales: 'bg-yellow-100 text-yellow-700',
+    support: 'bg-purple-100 text-purple-700',
+    hr: 'bg-pink-100 text-pink-700',
+    other: 'bg-gray-100 text-gray-700',
   };
+  
+  const displayRole = role ? role.charAt(0).toUpperCase() + role.slice(1) : 'Other';
+
   return (
-    <span className={`px-3 py-1 rounded-full text-xs font-medium ${styles[role] || 'bg-gray-100 text-gray-700'}`}>
-      {role}
+    <span className={`px-3 py-1 rounded-full text-xs font-medium ${styles[roleLower] || styles.other}`}>
+      {displayRole}
     </span>
   );
 };
 
 export default function EmployeeManagement() {
-  const [employees, setEmployees] = useState(INITIAL_EMPLOYEES);
-  const [filteredEmployees, setFilteredEmployees] = useState(INITIAL_EMPLOYEES);
+  const [employees, setEmployees] = useState([]);
+  const [filteredEmployees, setFilteredEmployees] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -70,6 +51,37 @@ export default function EmployeeManagement() {
   const [formData, setFormData] = useState(initialFormState);
   const [formErrors, setFormErrors] = useState({});
 
+  // Fetch from backend
+  const fetchEmployees = async () => {
+    try {
+      const response = await fetch(API_BASE_URL, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}` // pass token
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        const mappedEmployees = data.data.map(emp => ({
+           id: emp._id,
+           name: `${emp.firstName} ${emp.lastName}`,
+           email: emp.email,
+           phone: emp.contactNumber,
+           role: emp.role, // store enum directly
+           hireDate: emp.createdAt ? new Date(emp.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : '',
+           status: 'Active', // Mocked, no status in backend model currently
+           avatar: `https://ui-avatars.com/api/?name=${emp.firstName}+${emp.lastName}&background=random`
+        }));
+        setEmployees(mappedEmployees);
+      }
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
+
   // Apply filters
   useEffect(() => {
     let filtered = [...employees];
@@ -78,7 +90,7 @@ export default function EmployeeManagement() {
       filtered = filtered.filter(emp => 
         emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         emp.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        emp.id.toLowerCase().includes(searchQuery.toLowerCase())
+        (emp.id && emp.id.toLowerCase().includes(searchQuery.toLowerCase()))
       );
     }
 
@@ -130,25 +142,38 @@ export default function EmployeeManagement() {
     return date.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
   };
 
-  const handleAddEmployee = () => {
+  const handleAddEmployee = async () => {
     if (!validateForm()) return;
 
-    const newId = `#EMP-${(employees.length + 1).toString().padStart(3, '0')}`;
-    const formattedDate = formData.hireDate ? formatDate(formData.hireDate) : formatDate(new Date().toISOString());
+    const [firstName, ...lastNameParts] = formData.name.split(' ');
+    const lastName = lastNameParts.length > 0 ? lastNameParts.join(' ') : formData.name;
 
-    const newEmployee = {
-      id: newId,
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      role: formData.role,
-      status: 'Active',
-      hireDate: formattedDate,
-      avatar: `https://i.pravatar.cc/150?u=${Date.now()}`
-    };
-
-    setEmployees(prev => [newEmployee, ...prev]);
-    closeModal();
+    try {
+      const response = await fetch(API_BASE_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email: formData.email,
+          role: formData.role,
+          contactNumber: formData.phone
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        Swal.fire('Success', 'Employee created successfully', 'success');
+        fetchEmployees();
+        closeModal();
+      } else {
+        Swal.fire('Error', data.message || 'Error creating employee', 'error');
+      }
+    } catch (error) {
+      Swal.fire('Error', 'Server error', 'error');
+    }
   };
 
   const handleEditClick = (employee) => {
@@ -164,25 +189,38 @@ export default function EmployeeManagement() {
     setIsModalOpen(true);
   };
 
-  const handleUpdateEmployee = () => {
+  const handleUpdateEmployee = async () => {
     if (!validateForm()) return;
 
-    const updatedEmployees = employees.map(emp => {
-      if (emp.id === editingEmployee.id) {
-        return {
-          ...emp,
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          role: formData.role,
-          hireDate: formData.hireDate
-        };
-      }
-      return emp;
-    });
+    const [firstName, ...lastNameParts] = formData.name.split(' ');
+    const lastName = lastNameParts.length > 0 ? lastNameParts.join(' ') : formData.name;
 
-    setEmployees(updatedEmployees);
-    closeModal();
+    try {
+      const response = await fetch(`${API_BASE_URL}/${editingEmployee.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email: formData.email,
+          role: formData.role,
+          contactNumber: formData.phone
+        })
+      });
+      const data = await response.json();
+      if (data.success) {
+        Swal.fire('Success', 'Employee updated successfully', 'success');
+        fetchEmployees();
+        closeModal();
+      } else {
+        Swal.fire('Error', data.message || 'Error updating employee', 'error');
+      }
+    } catch (error) {
+      Swal.fire('Error', 'Server error', 'error');
+    }
   };
 
   const handleDeleteEmployee = (id) => {
@@ -194,15 +232,25 @@ export default function EmployeeManagement() {
       confirmButtonColor: '#10b981',
       cancelButtonColor: '#ef4444',
       confirmButtonText: 'Yes, delete it!'
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        setEmployees(prev => prev.filter(emp => emp.id !== id));
-        Swal.fire({
-          title: 'Deleted!',
-          text: 'Employee has been deleted.',
-          icon: 'success',
-          confirmButtonColor: '#10b981'
-        });
+        try {
+          const response = await fetch(`${API_BASE_URL}/${id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+          const data = await response.json();
+          if (data.success) {
+            Swal.fire('Deleted!', 'Employee has been deleted.', 'success');
+            fetchEmployees();
+          } else {
+            Swal.fire('Error', data.message || 'Error deleting employee', 'error');
+          }
+        } catch (error) {
+          Swal.fire('Error', 'Server error', 'error');
+        }
       }
     });
   };
@@ -284,10 +332,13 @@ export default function EmployeeManagement() {
                   onChange={(e) => setRoleFilter(e.target.value)}
                   className="w-full appearance-none bg-white border border-slate-300 rounded-lg pl-4 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-700 cursor-pointer"
                 >
-                  <option>All Roles</option>
-                  <option>Admin</option>
-                  <option>Manager</option>
-                  <option>Developer</option>
+                  <option value="All Roles">All Roles</option>
+                  <option value="manager">Manager</option>
+                  <option value="sales">Sales</option>
+                  <option value="support">Support</option>
+                  <option value="developer">Developer</option>
+                  <option value="hr">HR</option>
+                  <option value="other">Other</option>
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 pointer-events-none" />
               </div>
@@ -333,7 +384,9 @@ export default function EmployeeManagement() {
                 {currentItems.length > 0 ? (
                   currentItems.map((emp) => (
                     <tr key={emp.id} className={`hover:bg-slate-50 transition-colors ${emp.status === 'Inactive' ? 'opacity-60' : ''}`}>
-                      <td className="px-4 md:px-6 py-4 text-sm font-medium text-slate-700">{emp.id}</td>
+                      <td className="px-4 md:px-6 py-4 text-sm font-medium text-slate-700" title={emp.id}>
+                        {emp.id ? emp.id.substring(0, 8) : 'N/A'}...
+                      </td>
                       <td className="px-4 md:px-6 py-4">
                         <div className="flex items-center gap-3">
                           <img src={emp.avatar} alt={emp.name} className="h-8 w-8 rounded-full bg-slate-200 object-cover" />
@@ -495,9 +548,12 @@ export default function EmployeeManagement() {
                       } focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm cursor-pointer`}
                     >
                       <option value="" disabled>Select a role</option>
-                      <option value="Admin">Admin</option>
-                      <option value="Manager">Manager</option>
-                      <option value="Developer">Developer</option>
+                      <option value="manager">Manager</option>
+                      <option value="sales">Sales</option>
+                      <option value="support">Support</option>
+                      <option value="developer">Developer</option>
+                      <option value="hr">HR</option>
+                      <option value="other">Other</option>
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
                   </div>
