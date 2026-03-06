@@ -20,10 +20,20 @@ export const registerUser = async (req, res) => {
 
     const user = await User.create({ first_name, last_name, email, password, role, phoneNumber, NIC });
 
+    // Generate token first
+    const token = generateToken(user);
+
+    // Set token as cookie
+    res.cookie("access_token", token, {
+      httpOnly: true,       // prevents client-side JS from reading it
+      secure: false,        // true in production (https)
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
+
     res.status(201).json({
       message: "Registration successful",
       user,
-      token: generateToken(user),
+      token,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -37,10 +47,20 @@ export const loginUser = async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (user && user.matchPassword(password)) {
+
+      const token = generateToken(user);
+
+      // Set cookie
+      res.cookie("access_token", token, {
+        httpOnly: true,
+        secure: false, // true in production
+        maxAge: 24 * 60 * 60 * 1000 // 1 day
+      });
+
       res.status(200).json({
         message: "Login successful",
         user,
-        token: generateToken(user),
+        token // optional to send in response too
       });
     } else {
       res.status(401).json({ message: "Invalid email or password" });
@@ -52,5 +72,7 @@ export const loginUser = async (req, res) => {
 
 // Logout (frontend just deletes token)
 export const logoutUser = async (req, res) => {
+  // Clear cookie
+  res.clearCookie("access_token");
   res.status(200).json({ message: "Logged out successfully" });
 };
