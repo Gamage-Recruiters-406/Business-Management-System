@@ -62,7 +62,8 @@ export default function EmployeeManagement() {
       });
       const data = await response.json();
       if (data.success) {
-        const mappedEmployees = data.data.map(emp => ({
+        const mappedEmployees = data.data.map((emp, index) => ({
+           displayId: index + 1,
            id: emp._id,
            name: `${emp.firstName} ${emp.lastName}`,
            email: emp.email,
@@ -92,6 +93,7 @@ export default function EmployeeManagement() {
       filtered = filtered.filter(emp => 
         emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         emp.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (emp.displayId && emp.displayId.toString().includes(searchQuery.trim())) ||
         (emp.id && emp.id.toLowerCase().includes(searchQuery.toLowerCase()))
       );
     }
@@ -402,8 +404,8 @@ export default function EmployeeManagement() {
                 {currentItems.length > 0 ? (
                   currentItems.map((emp) => (
                     <tr key={emp.id} className={`hover:bg-slate-50 transition-colors ${emp.status === 'Inactive' ? 'opacity-60' : ''}`}>
-                      <td className="px-4 md:px-6 py-4 text-sm font-medium text-slate-700" title={emp.id}>
-                        {emp.id ? emp.id.substring(0, 8) : 'N/A'}...
+                      <td className="px-4 md:px-6 py-4 text-sm font-medium text-slate-700" title={`Original ID: ${emp.id}`}>
+                        {emp.displayId}
                       </td>
                       <td className="px-4 md:px-6 py-4">
                         <div className="flex items-center gap-3">
