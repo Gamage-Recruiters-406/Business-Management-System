@@ -1,14 +1,14 @@
 import { X } from "lucide-react";
 import { useState } from "react";
 
-export default function AddLeadModal({ isOpen, onClose }) {
+export default function AddLeadModal({ isOpen, onClose, onAdd }) {
 
   const [lead, setLead] = useState({
     name: "",
     email: "",
     phone: "",
     date: "",
-    status: "NEW"
+    status: "New"
   });
 
   const handleChange = (e) => {
@@ -20,8 +20,7 @@ export default function AddLeadModal({ isOpen, onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onAdd(lead);
-    console.log(lead);
+    if (onAdd) onAdd(lead); // call parent handler
     onClose();
     setLead({
       name: "",
@@ -83,7 +82,7 @@ export default function AddLeadModal({ isOpen, onClose }) {
             <input
               type="text"
               name="phone"
-              placeholder="+1 (555) 000-0000"
+              placeholder="+94*********"
               value={lead.phone}
               onChange={handleChange}
               className="w-full border rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500"

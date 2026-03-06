@@ -17,7 +17,7 @@ export default function EditLeadModal({ isOpen, onClose, lead, onUpdate }) {
             name: lead.name || "",
             email: lead.email || "",
             phone: lead.phone || "",
-            date: lead.created || "",
+            date: lead.created ? new Date(lead.created).toISOString().slice(0,10) : "",
             status: lead.status || "New"
             });
     }
@@ -34,7 +34,7 @@ export default function EditLeadModal({ isOpen, onClose, lead, onUpdate }) {
     e.preventDefault();
     onUpdate({
         ...formData,
-        created: formData.date
+        id: lead.id,
       });
     onClose();
   };
@@ -94,19 +94,7 @@ export default function EditLeadModal({ isOpen, onClose, lead, onUpdate }) {
             />
           </div>
 
-          {/* Date + Status */}
-          <div className="grid grid-cols-2 gap-3">
-
-            <div className="block w-full">
-              <label className="block text-sm text-gray-600">Date</label>
-              <input
-                type="date"
-                name="date"
-                value={formData.date}
-                onChange={handleChange}
-                className="w-full border rounded-md px-3 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+          {/* Status */}
 
             <div className="block w-full">
               <label className="block text-sm text-gray-600">Status</label>
@@ -121,8 +109,6 @@ export default function EditLeadModal({ isOpen, onClose, lead, onUpdate }) {
                 <option>Converted</option>
               </select>
             </div>
-
-          </div>
 
           {/* Buttons */}
           <div className="flex justify-end gap-3 pt-3">
