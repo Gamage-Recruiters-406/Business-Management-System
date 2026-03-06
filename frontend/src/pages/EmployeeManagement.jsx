@@ -57,7 +57,7 @@ export default function EmployeeManagement() {
     try {
       const response = await fetch(API_BASE_URL, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}` // pass token
+          'Authorization': `Bearer ${localStorage.getItem('userToken')}` // pass token
         }
       });
       const data = await response.json();
