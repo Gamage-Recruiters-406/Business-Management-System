@@ -198,7 +198,7 @@ export default function SignUpPage() {
       <div className="bg-white rounded-2xl shadow-sm w-full max-w-lg px-10 py-10">
         {/* Brand badge */}
         <div className="flex flex-col items-center mb-8">
-          <span className="bg-[#E8EEFF] text-[#2563EB] text-[11px] font-semibold tracking-widest px-4 py-1.5 rounded-full mb-5">
+          <span className="bg-[#E8EEFF] text-[#2563EB] text-[11px] font-bold tracking-widest px-4 py-1.5 rounded-full mb-5">
             BIZMANAGER
           </span>
           <h1 className="text-[2rem] font-bold text-gray-900 mb-2 tracking-tight">
