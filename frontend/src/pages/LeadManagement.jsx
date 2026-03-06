@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Edit2, Trash2 } from 'lucide-react';
-import AddLeadModal from '../components/AddLeadModal';
+import AddLeadModal from '../components/lead/AddLeadModal';
+import EditLeadModal from '../components/lead/EditLeadModal';
 
 const LeadManagement = () => {
   const [leads, setLeads] = useState([
@@ -17,6 +18,8 @@ const LeadManagement = () => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [currentPage, setCurrentPage] = useState(1);
   const [openModal, setOpenModal] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [selectedLead, setSelectedLead] = useState(null);
   const itemsPerPage = 5;
 
   const statusOptions = ['All', 'New', 'Contacted', 'Converted'];
@@ -89,6 +92,15 @@ const LeadManagement = () => {
     }
   };
 
+  const handleUpdateLead = (updatedLead) => {
+
+    const updatedLeads = leads.map((l) =>
+      l.id === updatedLead.id ? updatedLead : l
+    );
+  
+    setLeads(updatedLeads);
+  };
+
   
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
@@ -113,7 +125,7 @@ const LeadManagement = () => {
         <div className="flex items-center justify-end mb-8">
             <button
               onClick={() => setOpenModal(true)} 
-              className="bg-blue-600 text-white px-4 py-1 sm:px-6 sm:py-2.5 rounded-lg font-small md:font-medium hover:bg-blue-700 transition-colors w-xl sm:w-auto text-center">
+              className="bg-blue-800 text-white px-4 py-1 sm:px-6 sm:py-2.5 rounded-lg font-small md:font-medium hover:bg-blue-950 transition-colors w-xl sm:w-auto text-center">
                 + New Lead
             </button>
             <AddLeadModal
@@ -147,7 +159,7 @@ const LeadManagement = () => {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-800 bg-white"
                 >
                   {statusOptions.map((option) => (
                     <option key={option} value={option}>{option}</option>
@@ -221,12 +233,24 @@ const LeadManagement = () => {
                             </td>
                             <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div className="flex items-center gap-4">
-                                <button className="text-blue-600 hover:text-blue-900 p-2 rounded">
+                                <button
+                                  onClick={() => {
+                                    setSelectedLead(lead);
+                                    setEditOpen(true);
+                                  }} 
+                                  className="text-blue-800 hover:text-blue-950 p-2 rounded">
                                     <Edit2 size={18} />
                                 </button>
                                 <button className="text-red-400 hover:text-red-800 p-2 rounded">
                                     <Trash2 size={18} />
                                 </button>
+
+                                <EditLeadModal
+                                  isOpen={editOpen}
+                                  onClose={() => setEditOpen(false)}
+                                  lead={selectedLead}
+                                  onUpdate={handleUpdateLead}
+                                />
                             </div>
                             </td>
                         </tr>
@@ -259,7 +283,7 @@ const LeadManagement = () => {
                       onClick={() => handlePageChange(i + 1)}
                       className={`px-3 py-1 rounded-lg text-sm font-medium border transition-colors ${
                         currentPage === i + 1
-                          ? 'bg-blue-600 text-white border-blue-600'
+                          ? 'bg-blue-800 text-white border-blue-800'
                           : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                       }`}
                     >

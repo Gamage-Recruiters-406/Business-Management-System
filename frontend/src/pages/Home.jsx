@@ -17,6 +17,13 @@ const CARDS = [
     description: "Organise, track, and manage your team tasks efficiently.",
     color: "blue",
   },
+  {
+    to: "/leads",
+    icon: Users,
+    label: "Lead Management",
+    description: "Manage and track your sales pipeline prospects.",
+    color: "darkblue",
+  },
 ];
 
 const COLOR = {
@@ -28,6 +35,11 @@ const COLOR = {
   blue: {
     icon: "bg-blue-100 text-blue-600",
     btn: "bg-blue-600 hover:bg-blue-700",
+    border: "hover:border-blue-300",
+  },
+  darkblue: {
+    icon: "bg-blue-100 text-blue-800",
+    btn: "bg-blue-800 hover:bg-blue-950",
     border: "hover:border-blue-300",
   },
 };
