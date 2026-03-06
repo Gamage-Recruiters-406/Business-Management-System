@@ -56,7 +56,7 @@ export default function EmployeeManagement() {
     try {
       const response = await fetch(API_BASE_URL, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}` // pass token
+          'Authorization': `Bearer ${localStorage.getItem('userToken')}` // pass token
         }
       });
       const data = await response.json();
@@ -153,7 +153,7 @@ export default function EmployeeManagement() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('userToken')}`
         },
         body: JSON.stringify({
           firstName,
@@ -200,7 +200,7 @@ export default function EmployeeManagement() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('userToken')}`
         },
         body: JSON.stringify({
           firstName,
@@ -238,7 +238,7 @@ export default function EmployeeManagement() {
           const response = await fetch(`${API_BASE_URL}/${id}`, {
             method: 'DELETE',
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
+              'Authorization': `Bearer ${localStorage.getItem('userToken')}`
             }
           });
           const data = await response.json();
