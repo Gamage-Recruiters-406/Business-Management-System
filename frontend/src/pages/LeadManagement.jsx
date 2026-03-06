@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Edit2, Trash2 } from 'lucide-react';
+import AddLeadModal from '../components/AddLeadModal';
 
 const LeadManagement = () => {
   const [leads, setLeads] = useState([
@@ -15,6 +16,7 @@ const LeadManagement = () => {
   const [statusFilter, setStatusFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [currentPage, setCurrentPage] = useState(1);
+  const [openModal, setOpenModal] = useState(false);
   const itemsPerPage = 5;
 
   const statusOptions = ['All', 'New', 'Contacted', 'Converted'];
@@ -105,13 +107,19 @@ const LeadManagement = () => {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-md md:text-3xl font-bold text-gray-900">Lead Management</h1>
-            <p className="text-xs md:text-lg text-gray-600 mt-1">Manage your sales pipeline prospects</p>
+            <p className="text-xs md:text-lg text-gray-600 mt-1">Manage and track your sales pipeline prospects</p>
           </div>
         </div>
         <div className="flex items-center justify-end mb-8">
-            <button className="bg-blue-600 text-white px-4 py-1 sm:px-6 sm:py-2.5 rounded-lg font-small md:font-medium hover:bg-blue-700 transition-colors w-xl sm:w-auto text-center">
+            <button
+              onClick={() => setOpenModal(true)} 
+              className="bg-blue-600 text-white px-4 py-1 sm:px-6 sm:py-2.5 rounded-lg font-small md:font-medium hover:bg-blue-700 transition-colors w-xl sm:w-auto text-center">
                 + New Lead
             </button>
+            <AddLeadModal
+                isOpen={openModal}
+                onClose={() => setOpenModal(false)}
+            />
         </div>
 
         {/* Filters Row */}
@@ -170,8 +178,8 @@ const LeadManagement = () => {
                     </div>
                   </th>
                   <th className="px-16 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                  <th className="px-16 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                  <th className="hidden sm:table-cell px-16 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-10 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                  <th className="hidden sm:table-cell px-8 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <div className="flex items-center gap-2 cursor-pointer group" onClick={() => handleSort('created')}>
                       Created Date
                       <svg className={`h-4 w-4 transition-transform ${sortConfig.key === 'created' ? (sortConfig.direction === 'asc' ? 'rotate-180' : '') : ''} group-hover:opacity-75`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -179,7 +187,7 @@ const LeadManagement = () => {
                       </svg>
                     </div>
                   </th>
-                  <th className="px-16 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-10 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     <div className="flex items-center gap-2 cursor-pointer group" onClick={() => handleSort('status')}>
                       Status
                       <svg className={`h-4 w-4 transition-transform ${sortConfig.key === 'status' ? (sortConfig.direction === 'asc' ? 'rotate-180' : '') : ''} group-hover:opacity-75`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
