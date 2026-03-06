@@ -170,7 +170,7 @@ export default function EmployeeManagement() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('userToken')}`
         },
         body: JSON.stringify({
           firstName,
@@ -218,7 +218,7 @@ export default function EmployeeManagement() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('userToken')}`
         },
         body: JSON.stringify({
           firstName,
@@ -256,7 +256,7 @@ export default function EmployeeManagement() {
           const response = await fetch(`${API_BASE_URL}/${id}`, {
             method: 'DELETE',
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
+              'Authorization': `Bearer ${localStorage.getItem('userToken')}`
             }
           });
           const data = await response.json();
@@ -670,7 +670,7 @@ export default function EmployeeManagement() {
               </button>
               <button 
                 onClick={isEditMode ? handleUpdateEmployee : handleAddEmployee}
-                disabled={!formData.name || !formData.email || !formData.role || !formData.phone}
+                //disabled={!formData.name || !formData.email || !formData.role || !formData.phone}
                 className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 transition-colors shadow-sm cursor-pointer"
               >
                 {isEditMode ? 'Update Employee' : 'Add Employee'}
