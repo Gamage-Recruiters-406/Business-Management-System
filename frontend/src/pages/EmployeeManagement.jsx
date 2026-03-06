@@ -46,7 +46,8 @@ export default function EmployeeManagement() {
     role: '',
     email: '',
     phone: '',
-    hireDate: ''
+    hireDate: '',
+    avatarPreview: null
   };
   const [formData, setFormData] = useState(initialFormState);
   const [formErrors, setFormErrors] = useState({});
@@ -56,17 +57,19 @@ export default function EmployeeManagement() {
     try {
       const response = await fetch(API_BASE_URL, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}` // pass token
+          'Authorization': `Bearer ${localStorage.getItem('userToken')}` // pass token
         }
       });
       const data = await response.json();
       if (data.success) {
-        const mappedEmployees = data.data.map(emp => ({
+        const mappedEmployees = data.data.map((emp, index) => ({
+           displayId: index + 1,
            id: emp._id,
            name: `${emp.firstName} ${emp.lastName}`,
            email: emp.email,
            phone: emp.contactNumber,
            role: emp.role, // store enum directly
+           hireDateRaw: emp.createdAt ? new Date(emp.createdAt).toISOString().split('T')[0] : '',
            hireDate: emp.createdAt ? new Date(emp.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : '',
            status: 'Active', // Mocked, no status in backend model currently
            avatar: `https://ui-avatars.com/api/?name=${emp.firstName}+${emp.lastName}&background=random`
@@ -90,6 +93,7 @@ export default function EmployeeManagement() {
       filtered = filtered.filter(emp => 
         emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         emp.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (emp.displayId && emp.displayId.toString().includes(searchQuery.trim())) ||
         (emp.id && emp.id.toLowerCase().includes(searchQuery.toLowerCase()))
       );
     }
@@ -118,6 +122,21 @@ export default function EmployeeManagement() {
     // Clear error for this field
     if (formErrors[name]) {
       setFormErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        Swal.fire('Error', 'File size should not exceed 5MB', 'error');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, avatarPreview: reader.result, avatarFile: file }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -153,7 +172,7 @@ export default function EmployeeManagement() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('userToken')}`
         },
         body: JSON.stringify({
           firstName,
@@ -183,7 +202,8 @@ export default function EmployeeManagement() {
       role: employee.role,
       email: employee.email,
       phone: employee.phone,
-      hireDate: employee.hireDate
+      hireDate: employee.hireDateRaw || '',
+      avatarPreview: employee.avatar || null
     });
     setIsEditMode(true);
     setIsModalOpen(true);
@@ -200,7 +220,7 @@ export default function EmployeeManagement() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('userToken')}`
         },
         body: JSON.stringify({
           firstName,
@@ -238,7 +258,7 @@ export default function EmployeeManagement() {
           const response = await fetch(`${API_BASE_URL}/${id}`, {
             method: 'DELETE',
             headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
+              'Authorization': `Bearer ${localStorage.getItem('userToken')}`
             }
           });
           const data = await response.json();
@@ -384,8 +404,8 @@ export default function EmployeeManagement() {
                 {currentItems.length > 0 ? (
                   currentItems.map((emp) => (
                     <tr key={emp.id} className={`hover:bg-slate-50 transition-colors ${emp.status === 'Inactive' ? 'opacity-60' : ''}`}>
-                      <td className="px-4 md:px-6 py-4 text-sm font-medium text-slate-700" title={emp.id}>
-                        {emp.id ? emp.id.substring(0, 8) : 'N/A'}...
+                      <td className="px-4 md:px-6 py-4 text-sm font-medium text-slate-700" title={`Original ID: ${emp.id}`}>
+                        {emp.displayId}
                       </td>
                       <td className="px-4 md:px-6 py-4">
                         <div className="flex items-center gap-3">
@@ -496,9 +516,9 @@ export default function EmployeeManagement() {
 
       {/* Add/Edit Employee Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-start sticky top-0 bg-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4" onClick={closeModal}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="px-6 py-5 border-b border-slate-100 flex justify-between items-start sticky top-0 bg-white z-10">
               <div>
                 <h2 className="text-xl font-bold text-slate-900">
                   {isEditMode ? 'Edit Employee' : 'Add New Employee'}
@@ -613,15 +633,30 @@ export default function EmployeeManagement() {
 
                 <div className="space-y-1.5 md:col-span-2">
                   <label className="text-sm font-semibold text-slate-800">Profile Photo</label>
-                  <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center text-center hover:bg-slate-50 transition-colors cursor-pointer">
-                    <div className="bg-slate-100 p-2 rounded-full mb-2">
-                      <UploadCloud className="h-5 w-5 text-slate-500" />
-                    </div>
-                    <div>
-                      <span className="text-emerald-600 hover:text-emerald-700 font-medium text-sm">Upload a file</span>
-                      <span className="text-slate-500 text-sm"> or drag and drop</span>
-                    </div>
-                    <p className="text-xs text-slate-400 mt-1">PNG, JPG up to 5MB</p>
+                  <div className="relative border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center text-center hover:bg-slate-50 transition-colors cursor-pointer overflow-hidden">
+                    <input 
+                      type="file" 
+                      onChange={handleFileChange}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+                      accept=".png, .jpg, .jpeg"
+                    />
+                    {formData.avatarPreview ? (
+                      <div className="flex flex-col items-center">
+                        <img src={formData.avatarPreview} alt="Preview" className="h-20 w-20 rounded-full object-cover mb-2 border border-slate-200 shadow-sm" />
+                        <span className="text-emerald-600 hover:text-emerald-700 font-medium text-sm">Change photo</span>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="bg-slate-100 p-2 rounded-full mb-2">
+                          <UploadCloud className="h-5 w-5 text-slate-500" />
+                        </div>
+                        <div>
+                          <span className="text-emerald-600 hover:text-emerald-700 font-medium text-sm">Upload a file</span>
+                          <span className="text-slate-500 text-sm"> or drag and drop</span>
+                        </div>
+                        <p className="text-xs text-slate-400 mt-1">PNG, JPG up to 5MB</p>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -637,7 +672,7 @@ export default function EmployeeManagement() {
               </button>
               <button 
                 onClick={isEditMode ? handleUpdateEmployee : handleAddEmployee}
-                disabled={!formData.name || !formData.email || !formData.role || !formData.phone}
+                //disabled={!formData.name || !formData.email || !formData.role || !formData.phone}
                 className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 transition-colors shadow-sm cursor-pointer"
               >
                 {isEditMode ? 'Update Employee' : 'Add Employee'}
