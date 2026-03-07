@@ -76,3 +76,42 @@ export const logoutUser = async (req, res) => {
   res.clearCookie("access_token");
   res.status(200).json({ message: "Logged out successfully" });
 };
+
+// Get logged-in user profile
+export const getUserProfile = async (req, res) => {
+  try {
+
+    const user = await User.findById(req.user._id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json(user);
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+// Get all users (admin only)
+export const getAllEmployees = async (req, res) => {
+  try {
+
+    const employees = await User.find({ role: "employee" }).select("-password");
+
+    res.status(200).json({
+      count: employees.length,
+      employees,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
