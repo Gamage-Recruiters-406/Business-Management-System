@@ -31,6 +31,16 @@ const CARDS = [
     description: "View an overview of your business metrics and performance.",
     color: "purple",
   },
+
+    {
+    to: "/reports",
+    icon: Users,
+    label: "Admin Reports",
+    description: "View comprehensive reports and analytics.",
+    color: "blue",
+  },
+
+
 ];
 
 const COLOR = {
