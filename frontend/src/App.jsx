@@ -8,6 +8,7 @@ import "./App.css";
 import LeadManagement from "./pages/LeadManagement";
 import SignInPage from "./pages/login/SignInPage";
 import SignUpPage from "./pages/login/SignUpPage";
+import ProfilePage from "./pages/Profile";
 import Reports from "./pages/admin_Reports/ReportsDashboard";
 
 
@@ -23,6 +24,7 @@ function App() {
         <Route path="/leads" element={<LeadManagement />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/signin" element={<SignInPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
          <Route path="/reports" element={<Reports />} />
       </Routes>
     </BrowserRouter>
