@@ -8,7 +8,6 @@ const StatsCards = ({ stats }) => {
           key={idx} 
           className="bg-white p-6 rounded-[32px] shadow-sm border border-slate-100 flex items-center justify-between transition-all hover:shadow-md"
         >
-          {/* Left Side: Title and Value */}
           <div className="flex flex-col">
             <p className="text-[12px] font-bold text-slate-400 uppercase tracking-widest mb-1">
               {item.title}
@@ -18,7 +17,6 @@ const StatsCards = ({ stats }) => {
             </h2>
           </div>
 
-          {/* Right Side */}
           <div 
             className={`${item.bg} p-4 rounded-2xl flex items-center justify-center`} 
             style={{ color: item.color }}
