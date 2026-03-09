@@ -5,12 +5,7 @@ import axios from "axios";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // ─── SVG Icons ────────────────────────────────────────────────────────────────
-const EditIcon = () => (
-    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-    </svg>
-);
+
 
 const UserIcon = () => (
     <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,108 +49,7 @@ const PersonalInfoIcon = () => (
     </svg>
 );
 
-// ─── Edit Profile Modal ────────────────────────────────────────────────────────
-function EditProfileModal({ user, onClose, onSave }) {
-    const [form, setForm] = useState({
-        first_name: user.first_name || "",
-        last_name: user.last_name || "",
-        phoneNumber: user.phoneNumber || "",
-        bio: user.bio || "",
-    });
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
 
-    const handleSave = async () => {
-        setLoading(true);
-        setError("");
-        try {
-            const token = localStorage.getItem("userToken");
-            const userId = localStorage.getItem("userId");
-            const res = await axios.put(
-                `${API_BASE_URL}/users/${userId}`,
-                form,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            const updated = { ...user, ...form };
-            localStorage.setItem("userData", JSON.stringify(updated));
-            onSave(updated);
-        } catch (err) {
-            // Update local only if API fails (no PUT endpoint required)
-            const updated = { ...user, ...form };
-            localStorage.setItem("userData", JSON.stringify(updated));
-            onSave(updated);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 animate-fadeIn">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Edit Profile</h2>
-
-                <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
-                        <div>
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">First Name</label>
-                            <input
-                                className="w-full border border-gray-200 rounded-xl bg-[#F8F9FC] px-3 h-11 text-sm text-gray-800 outline-none focus:border-[#2563EB] transition-colors"
-                                value={form.first_name}
-                                onChange={e => setForm(p => ({ ...p, first_name: e.target.value }))}
-                            />
-                        </div>
-                        <div>
-                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Last Name</label>
-                            <input
-                                className="w-full border border-gray-200 rounded-xl bg-[#F8F9FC] px-3 h-11 text-sm text-gray-800 outline-none focus:border-[#2563EB] transition-colors"
-                                value={form.last_name}
-                                onChange={e => setForm(p => ({ ...p, last_name: e.target.value }))}
-                            />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Phone Number</label>
-                        <input
-                            className="w-full border border-gray-200 rounded-xl bg-[#F8F9FC] px-3 h-11 text-sm text-gray-800 outline-none focus:border-[#2563EB] transition-colors"
-                            value={form.phoneNumber}
-                            onChange={e => setForm(p => ({ ...p, phoneNumber: e.target.value }))}
-                        />
-                    </div>
-
-                    <div>
-                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Professional Bio</label>
-                        <textarea
-                            className="w-full border border-gray-200 rounded-xl bg-[#F8F9FC] px-3 py-3 text-sm text-gray-800 outline-none focus:border-[#2563EB] transition-colors resize-none"
-                            rows={4}
-                            value={form.bio}
-                            onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
-                            placeholder="Write a short professional bio..."
-                        />
-                    </div>
-
-                    {error && <p className="text-red-500 text-sm">{error}</p>}
-                </div>
-
-                <div className="flex gap-3 mt-6">
-                    <button
-                        onClick={onClose}
-                        className="flex-1 border border-gray-200 text-gray-600 font-semibold rounded-xl py-3 hover:bg-gray-50 transition-colors"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={handleSave}
-                        disabled={loading}
-                        className="flex-1 bg-[#2563EB] hover:bg-[#1d4ed8] text-white font-semibold rounded-xl py-3 transition-colors disabled:opacity-60"
-                    >
-                        {loading ? "Saving..." : "Save Changes"}
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-}
 
 // ─── Info Field Card ───────────────────────────────────────────────────────────
 function InfoField({ icon, label, value }) {
@@ -190,7 +84,7 @@ export default function ProfilePage() {
     const [user, setUser] = useState(null);
     const [stats, setStats] = useState({ tasks: 0, leads: 0, employees: 0 });
     const [statsLoading, setStatsLoading] = useState(true);
-    const [showEdit, setShowEdit] = useState(false);
+
 
     // Load user from localStorage
     useEffect(() => {
@@ -259,7 +153,7 @@ export default function ProfilePage() {
     }
 
     const fullName = `${user.first_name || ""} ${user.last_name || ""}`.trim();
-    const bio = user.bio || "No professional bio added yet. Click Edit Profile to add one.";
+    const bio = user.bio || "No professional bio added yet.";
 
     return (
         <>
@@ -286,13 +180,7 @@ export default function ProfilePage() {
                                 </div>
                             </div>
 
-                            <button
-                                onClick={() => setShowEdit(true)}
-                                className="flex items-center gap-2 border border-[#2563EB] text-[#2563EB] font-semibold text-sm rounded-full px-4 py-2 hover:bg-blue-50 transition-colors"
-                            >
-                                <EditIcon />
-                                Edit Profile
-                            </button>
+
                         </div>
 
                         {/* ── Stats Row ─────────────────────────────────────────── */}
@@ -343,17 +231,7 @@ export default function ProfilePage() {
                 </div>
             </div>
 
-            {/* Edit Modal */}
-            {showEdit && (
-                <EditProfileModal
-                    user={user}
-                    onClose={() => setShowEdit(false)}
-                    onSave={(updated) => {
-                        setUser(updated);
-                        setShowEdit(false);
-                    }}
-                />
-            )}
+
         </>
     );
 }
