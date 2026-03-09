@@ -378,8 +378,5 @@ Steps:
 
 
 
-1️⃣ **GitHub project badges (build, version, stars)**
-2️⃣ **Screenshots section (UI preview)**
-3️⃣ **ER diagram + architecture diagram**
 
-These will make your README look like a **real production-level GitHub repository**.
+
