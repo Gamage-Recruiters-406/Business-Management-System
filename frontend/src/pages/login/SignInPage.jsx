@@ -31,6 +31,7 @@ export default function SignInPage() {
       const response = await fetch(`${API_BASE_URL}/users/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
       });
       const data = await response.json();
@@ -123,12 +124,6 @@ export default function SignInPage() {
               <label className="text-sm font-medium text-gray-700">
                 Password
               </label>
-              <a
-                href="#"
-                className="text-sm text-[#2563EB] font-medium hover:underline"
-              >
-                Forgot password?
-              </a>
             </div>
             <div
               className={`flex items-center border rounded-xl bg-[#F8F9FC] px-4 h-12 transition-colors ${errors.password ? "border-red-400" : "border-gray-200 focus-within:border-[#2563EB]"}`}
