@@ -24,9 +24,9 @@ const TasklyDashboard = () => {
         console.log("Token sent to backend:", token); 
         const config = { 
           headers: { 
-            'Authorization': `Bearer ${token}`,
-            withCredentials: true
-          } 
+            'Authorization': `Bearer ${token}`
+          },
+          withCredentials: true
         };
 
         const [leadsRes, tasksRes, employeesRes] = await Promise.all([
@@ -38,11 +38,25 @@ const TasklyDashboard = () => {
         const rawTasks = tasksRes.data.tasks || [];
         const total = rawTasks.length;
 
-        // Pie Chart 
         const chartData = [
-          { name: 'In Progress Tasks', value: rawTasks.filter(t => t.status === 'in-progress').length, percentage: total ? Math.round((rawTasks.filter(t => t.status === 'in-progress').length / total) * 100) : 0 },
-          { name: 'Completed Tasks', value: rawTasks.filter(t => t.status === 'completed').length, percentage: total ? Math.round((rawTasks.filter(t => t.status === 'completed').length / total) * 100) : 0 },
-          { name: 'Pending Tasks', value: rawTasks.filter(t => t.status === 'pending').length, percentage: total ? Math.round((rawTasks.filter(t => t.status === 'pending').length / total) * 100) : 0 }
+          { 
+            name: 'In Progress Tasks', 
+            value: rawTasks.filter(t => t.status === 'in-progress').length, 
+            percentage: total ? Math.round((rawTasks.filter(t => t.status === 'in-progress').length / total) * 100) : 0,
+            color: '#3b82f6'
+          },
+          { 
+            name: 'Completed Tasks', 
+            value: rawTasks.filter(t => t.status === 'completed').length, 
+            percentage: total ? Math.round((rawTasks.filter(t => t.status === 'completed').length / total) * 100) : 0,
+            color: '#22c55e' 
+          },
+          { 
+            name: 'Pending Tasks', 
+            value: rawTasks.filter(t => t.status === 'pending').length, 
+            percentage: total ? Math.round((rawTasks.filter(t => t.status === 'pending').length / total) * 100) : 0,
+            color: '#f97316' 
+          }
         ];
 
         setDashboardData({
