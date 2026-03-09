@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Search,
   Download,
@@ -10,9 +10,6 @@ import {
   Trash2,
   X,
   ClipboardList,
-  Loader2,
-  AlertCircle,
-  Briefcase,
 } from "lucide-react";
 import StatusBadge from "../components/tasks/StatusBadge";
 import Pagination from "../components/tasks/Pagination";
@@ -20,24 +17,181 @@ import CreateTaskModal from "../components/tasks/CreateTaskModal";
 import DeleteConfirmModal from "../components/tasks/DeleteConfirmModal";
 import Toast from "../components/tasks/Toast";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+// ─── Static seed data ────────────────────────────────────────────────────────
 
-const getPageSize = () => {
-  const w = window.innerWidth;
-  if (w < 640) return 5; // mobile
-  if (w < 1024) return 8; // tablet
-  return 7; // desktop
+const AVATARS = {
+  "John Doe": "https://i.pravatar.cc/150?u=20",
+  "Sarah Williams": "https://i.pravatar.cc/150?u=21",
+  "Mark Stevenson": "https://i.pravatar.cc/150?u=22",
+  "Emma Davis": "https://i.pravatar.cc/150?u=23",
+  "Alex Thompson": "https://i.pravatar.cc/150?u=24",
+  "Ryan Parker": "https://i.pravatar.cc/150?u=25",
+  "Olivia Chen": "https://i.pravatar.cc/150?u=26",
 };
 
-const authHeaders = () => ({
-  "Content-Type": "application/json",
-  Authorization: `Bearer ${localStorage.getItem("userToken") || ""}`,
-});
+const ASSIGNEES_LIST = [
+  { name: "John Doe", avatar: AVATARS["John Doe"] },
+  { name: "Sarah Williams", avatar: AVATARS["Sarah Williams"] },
+  { name: "Mark Stevenson", avatar: AVATARS["Mark Stevenson"] },
+  { name: "Emma Davis", avatar: AVATARS["Emma Davis"] },
+  { name: "Alex Thompson", avatar: AVATARS["Alex Thompson"] },
+  { name: "Ryan Parker", avatar: AVATARS["Ryan Parker"] },
+];
 
-const formatDisplayDate = (dateStr) => {
-  if (!dateStr) return "—";
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return "—";
+const TEMPLATES = [
+  {
+    title: "Prepare client report",
+    description: "Compile financial results and Q4 projections for Smith & Co.",
+  },
+  {
+    title: "Update documentation",
+    description:
+      "Revise the API integration guides for the upcoming v2.0 release.",
+  },
+  {
+    title: "Fix login bug",
+    description:
+      "Users are unable to reset passwords on Safari mobile browser.",
+  },
+  {
+    title: "Design system audit",
+    description:
+      "Check all color tokens for accessibility compliance (WCAG 2.1).",
+  },
+  {
+    title: "Q4 Planning meeting",
+    description:
+      "Coordinate agenda and participants for next week's leadership offsite.",
+  },
+  {
+    title: "Onboard new developer",
+    description:
+      "Set up workstation and access for the incoming backend engineer.",
+  },
+  {
+    title: "Performance review",
+    description:
+      "Complete Q3 performance evaluations for the engineering team.",
+  },
+  {
+    title: "Database optimisation",
+    description:
+      "Optimise slow queries identified in the production monitoring dashboard.",
+  },
+  {
+    title: "Write unit tests",
+    description:
+      "Achieve 80 % code coverage for the new payment processing module.",
+  },
+  {
+    title: "Deploy v2.1 release",
+    description:
+      "Coordinate with DevOps for the production deployment of version 2.1.",
+  },
+  {
+    title: "Security audit",
+    description:
+      "Review access controls and identify potential vulnerabilities in the API.",
+  },
+  {
+    title: "Mobile app testing",
+    description:
+      "Conduct cross-device testing for the new mobile application features.",
+  },
+  {
+    title: "Customer feedback analysis",
+    description: "Analyse survey responses from the latest product release.",
+  },
+  {
+    title: "Infrastructure upgrade",
+    description:
+      "Migrate services to the new cloud infrastructure environment.",
+  },
+  {
+    title: "Code refactoring",
+    description: "Refactor legacy authentication module to modern standards.",
+  },
+  {
+    title: "Sprint retrospective",
+    description:
+      "Facilitate the team retrospective for the completed sprint cycle.",
+  },
+  {
+    title: "API rate limiting",
+    description: "Implement rate limiting on public-facing API endpoints.",
+  },
+  {
+    title: "UI component library",
+    description: "Build reusable UI components for the design system.",
+  },
+  {
+    title: "Data migration script",
+    description:
+      "Write and test migration scripts for the new database schema.",
+  },
+  {
+    title: "CI/CD pipeline setup",
+    description:
+      "Configure automated testing and deployment pipeline for the new service.",
+  },
+  {
+    title: "User acceptance testing",
+    description:
+      "Coordinate UAT sessions with key stakeholders for the new features.",
+  },
+];
+
+const STATUSES = [
+  "In Progress",
+  "Pending",
+  "Completed",
+  "Cancelled",
+  "In Progress",
+  "Pending",
+];
+const PRIORITIES = ["Medium", "High", "Low", "Critical", "Medium", "High"];
+const DUE_DATES = [
+  "Oct 24, 2023",
+  "Oct 25, 2023",
+  "Oct 22, 2023",
+  "Oct 28, 2023",
+  "Nov 02, 2023",
+  "Nov 05, 2023",
+  "Nov 08, 2023",
+  "Nov 10, 2023",
+  "Nov 12, 2023",
+  "Nov 15, 2023",
+  "Nov 18, 2023",
+  "Nov 20, 2023",
+  "Nov 22, 2023",
+  "Nov 25, 2023",
+  "Nov 28, 2023",
+  "Dec 01, 2023",
+  "Dec 03, 2023",
+  "Dec 05, 2023",
+  "Dec 08, 2023",
+  "Dec 10, 2023",
+  "Dec 12, 2023",
+];
+
+const generateInitialTasks = () =>
+  Array.from({ length: 42 }, (_, i) => ({
+    id: `TASK-${1024 + i}`,
+    ...TEMPLATES[i % TEMPLATES.length],
+    assignee: ASSIGNEES_LIST[i % ASSIGNEES_LIST.length],
+    status: STATUSES[i % STATUSES.length],
+    priority: PRIORITIES[i % PRIORITIES.length],
+    dueDate: DUE_DATES[i % DUE_DATES.length],
+    dueDateRaw: "",
+  }));
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const ITEMS_PER_PAGE = 5;
+
+const formatDisplayDate = (raw) => {
+  if (!raw) return "";
+  const d = new Date(`${raw}T00:00:00`);
   return d.toLocaleDateString("en-US", {
     month: "short",
     day: "2-digit",
@@ -45,235 +199,150 @@ const formatDisplayDate = (dateStr) => {
   });
 };
 
-const shortId = (id) => (id ? `#${id.slice(-6).toUpperCase()}` : "");
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function TaskManagement() {
-  const [tasks, setTasks] = useState([]);
-  const [total, setTotal] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
+  const [tasks, setTasks] = useState(() => generateInitialTasks());
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [assigneeFilter, setAssigneeFilter] = useState("All");
-
+  const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [deletingTask, setDeletingTask] = useState(null);
-  const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
 
-  const isAdmin = localStorage.getItem("userRole") === "admin";
+  // Unique assignee names for the filter dropdown
+  const uniqueAssignees = useMemo(
+    () => [...new Set(tasks.map((t) => t.assignee.name))].sort(),
+    [tasks],
+  );
 
-  const [itemsPerPage, setItemsPerPage] = useState(getPageSize);
-
-  // Re-calculate page size on window resize
-  useEffect(() => {
-    const handleResize = () => {
-      const next = getPageSize();
-      setItemsPerPage((prev) => {
-        if (prev !== next) {
-          setCurrentPage(1);
-          return next;
-        }
-        return prev;
-      });
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // ── Fetch tasks from API ──────────────────────────────────────────────────
-
-  const fetchTasks = useCallback(async (page = 1, status = "all", limit) => {
-    setLoading(true);
-    setError("");
-    try {
-      const params = new URLSearchParams({
-        page,
-        limit: limit ?? getPageSize(),
-      });
-      if (status && status !== "all") params.set("status", status);
-
-      const res = await fetch(`${API_BASE_URL}/tasks?${params}`, {
-        headers: authHeaders(),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.message || "Failed to fetch tasks");
-        return;
-      }
-
-      setTasks(data.tasks || []);
-      setTotal(data.total || 0);
-      setTotalPages(data.totalPages || 1);
-    } catch {
-      setError("Network error. Please check your connection and try again.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchTasks(currentPage, statusFilter, itemsPerPage);
-  }, [currentPage, statusFilter, itemsPerPage, fetchTasks]);
-
-  // ── Local search + assignee filter over the loaded page ──────────────────
-
-  const uniqueAssignees = useMemo(() => {
-    const names = tasks
-      .filter((t) => t.assignedTo?.firstName)
-      .map((t) => `${t.assignedTo.firstName} ${t.assignedTo.lastName}`);
-    return [...new Set(names)].sort();
-  }, [tasks]);
-
+  // Filtered task list
   const filteredTasks = useMemo(() => {
     const q = search.toLowerCase();
     return tasks.filter((t) => {
       const matchSearch =
         !q ||
+        t.id.toLowerCase().includes(q) ||
         t.title.toLowerCase().includes(q) ||
-        (t.description || "").toLowerCase().includes(q) ||
-        shortId(t._id).toLowerCase().includes(q);
+        t.description.toLowerCase().includes(q);
+      const matchStatus = statusFilter === "All" || t.status === statusFilter;
       const matchAssignee =
-        assigneeFilter === "All" ||
-        `${t.assignedTo?.firstName} ${t.assignedTo?.lastName}` ===
-          assigneeFilter;
-      return matchSearch && matchAssignee;
+        assigneeFilter === "All" || t.assignee.name === assigneeFilter;
+      return matchSearch && matchStatus && matchAssignee;
     });
-  }, [tasks, search, assigneeFilter]);
+  }, [tasks, search, statusFilter, assigneeFilter]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredTasks.length / ITEMS_PER_PAGE),
+  );
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedTasks = filteredTasks.slice(
+    (safePage - 1) * ITEMS_PER_PAGE,
+    safePage * ITEMS_PER_PAGE,
+  );
 
   const hasFilters =
-    search || statusFilter !== "all" || assigneeFilter !== "All";
+    search || statusFilter !== "All" || assigneeFilter !== "All";
 
-  // ── Handlers ─────────────────────────────────────────────────────────────
+  // ── Handlers ────────────────────────────────────────────────────────────────
 
-  const handleStatusFilter = (v) => {
-    setStatusFilter(v);
-    setCurrentPage(1);
-    setAssigneeFilter("All");
+  const resetPage = () => setCurrentPage(1);
+
+  const handleSearch = (v) => {
+    setSearch(v);
+    resetPage();
   };
-
+  const handleStatus = (v) => {
+    setStatusFilter(v);
+    resetPage();
+  };
+  const handleAssignee = (v) => {
+    setAssigneeFilter(v);
+    resetPage();
+  };
   const handleClearFilters = () => {
     setSearch("");
-    setStatusFilter("all");
+    setStatusFilter("All");
     setAssigneeFilter("All");
-    setCurrentPage(1);
+    resetPage();
   };
 
   const openCreate = () => {
     setEditingTask(null);
     setIsModalOpen(true);
   };
-
   const openEdit = (task) => {
     setEditingTask(task);
     setIsModalOpen(true);
   };
-
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingTask(null);
   };
 
-  const handleTaskSubmit = async (form) => {
-    setSaving(true);
-    try {
-      const body = {
+  const handleTaskSubmit = (form) => {
+    if (editingTask) {
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === editingTask.id
+            ? {
+                ...t,
+                title: form.title,
+                description: form.description,
+                assignee: {
+                  name: form.assignee,
+                  avatar:
+                    AVATARS[form.assignee] ??
+                    `https://i.pravatar.cc/150?u=${form.assignee.length}`,
+                },
+                status: form.status,
+                priority: form.priority,
+                dueDate: form.dueDate
+                  ? formatDisplayDate(form.dueDate)
+                  : t.dueDate,
+                dueDateRaw: form.dueDate,
+              }
+            : t,
+        ),
+      );
+    } else {
+      const newTask = {
+        id: `TASK-${Date.now()}`,
         title: form.title,
-        description: form.description || undefined,
+        description: form.description,
+        assignee: {
+          name: form.assignee || "Unassigned",
+          avatar: AVATARS[form.assignee] ?? "https://i.pravatar.cc/150?u=99",
+        },
         status: form.status,
-        dueDate: form.dueDate || undefined,
-        assignedTo: form.assignedTo || undefined,
-        leadId: form.leadId || undefined,
+        priority: form.priority,
+        dueDate: form.dueDate ? formatDisplayDate(form.dueDate) : "—",
+        dueDateRaw: form.dueDate,
       };
-
-      const url = editingTask
-        ? `${API_BASE_URL}/tasks/${editingTask._id}`
-        : `${API_BASE_URL}/tasks`;
-      const method = editingTask ? "PUT" : "POST";
-
-      const res = await fetch(url, {
-        method,
-        headers: authHeaders(),
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        setToast({
-          type: "error",
-          message: "Operation failed",
-          subMessage: data.message || "Something went wrong.",
-        });
-        return;
-      }
-
-      setToast({
-        message: editingTask ? "Task updated" : "Task created",
-        subMessage: editingTask
-          ? "Task has been updated successfully."
-          : "New task has been created.",
-      });
-      closeModal();
-      fetchTasks(currentPage, statusFilter);
-    } catch {
-      setToast({
-        type: "error",
-        message: "Network error",
-        subMessage: "Please try again.",
-      });
-    } finally {
-      setSaving(false);
+      setTasks((prev) => [newTask, ...prev]);
+      resetPage();
     }
   };
 
-  const handleDelete = (task) => setDeletingTask(task);
-
-  const confirmDelete = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/tasks/${deletingTask._id}`, {
-        method: "DELETE",
-        headers: authHeaders(),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        setToast({
-          type: "error",
-          message: "Delete failed",
-          subMessage: data.message || "Something went wrong.",
-        });
-        return;
-      }
-
-      setToast({
-        message: "Task deleted",
-        subMessage: "The task has been permanently removed.",
-      });
-      setDeletingTask(null);
-      const newTotalPages = Math.max(1, Math.ceil((total - 1) / itemsPerPage));
-      const safePage = Math.min(currentPage, newTotalPages);
-      if (safePage !== currentPage) {
-        setCurrentPage(safePage);
-      } else {
-        fetchTasks(currentPage, statusFilter);
-      }
-    } catch {
-      setToast({
-        type: "error",
-        message: "Network error",
-        subMessage: "Please try again.",
-      });
-    }
+  const handleDelete = (task) => {
+    setDeletingTask(task);
   };
 
-  const cancelDelete = () => setDeletingTask(null);
+  const confirmDelete = () => {
+    setTasks((prev) => prev.filter((t) => t.id !== deletingTask.id));
+    setToast({
+      message: "Task deleted",
+      subMessage: "The task has been permanently removed.",
+    });
+    setDeletingTask(null);
+  };
+
+  const cancelDelete = () => {
+    setDeletingTask(null);
+  };
 
   const handleExport = () => {
     const headers = [
@@ -281,24 +350,18 @@ export default function TaskManagement() {
       "Title",
       "Description",
       "Assignee",
-      "Assignee Email",
       "Status",
+      "Priority",
       "Due Date",
-      "Related Lead",
-      "Lead Email",
     ];
     const rows = filteredTasks.map((t) => [
-      t._id,
+      t.id,
       t.title,
-      t.description || "",
-      t.assignedTo
-        ? `${t.assignedTo.firstName} ${t.assignedTo.lastName}`
-        : "Unassigned",
-      t.assignedTo?.email || "",
+      t.description,
+      t.assignee.name,
       t.status,
-      formatDisplayDate(t.dueDate),
-      t.leadId?.name || "",
-      t.leadId?.email || "",
+      t.priority,
+      t.dueDate,
     ]);
     const csv = [headers, ...rows]
       .map((row) =>
@@ -316,9 +379,7 @@ export default function TaskManagement() {
     URL.revokeObjectURL(url);
   };
 
-  // ── Render ────────────────────────────────────────────────────────────────
-
-  const colSpan = isAdmin ? 7 : 6;
+  // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8 font-sans">
@@ -331,31 +392,24 @@ export default function TaskManagement() {
                 Task Management
               </h1>
               <p className="text-slate-500 mt-1 text-sm">
-                {loading
-                  ? "Loading…"
-                  : total > 0
-                    ? `${total} task${total !== 1 ? "s" : ""} total`
-                    : "Organize, track, and manage your team tasks efficiently."}
+                Organize, track, and manage your team tasks efficiently.
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0 flex-wrap">
               <button
                 onClick={handleExport}
-                disabled={loading || filteredTasks.length === 0}
-                className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors"
               >
                 <Download className="h-4 w-4" />
                 Export
               </button>
-              {isAdmin && (
-                <button
-                  onClick={openCreate}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-colors shadow-sm"
-                >
-                  <Plus className="h-4 w-4" />
-                  Create New Task
-                </button>
-              )}
+              <button
+                onClick={openCreate}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-colors shadow-sm"
+              >
+                <Plus className="h-4 w-4" />
+                Create New Task
+              </button>
             </div>
           </div>
 
@@ -368,46 +422,44 @@ export default function TaskManagement() {
                 <input
                   type="text"
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search tasks by ID, title, or description…"
+                  onChange={(e) => handleSearch(e.target.value)}
+                  placeholder="Search tasks by ID, title, or keywords..."
                   className="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-700 placeholder:text-slate-400"
                 />
               </div>
 
-              {/* Status filter (server-side) */}
+              {/* Status filter */}
               <div className="relative">
                 <SlidersHorizontal className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
                 <select
                   value={statusFilter}
-                  onChange={(e) => handleStatusFilter(e.target.value)}
+                  onChange={(e) => handleStatus(e.target.value)}
                   className="appearance-none pl-9 pr-8 py-2 rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-slate-700 cursor-pointer"
                 >
-                  <option value="all">Status: All</option>
-                  <option value="pending">Pending</option>
-                  <option value="in-progress">In Progress</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
+                  <option value="All">Status: All</option>
+                  <option>Pending</option>
+                  <option>In Progress</option>
+                  <option>Completed</option>
+                  <option>Cancelled</option>
                 </select>
                 <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
               </div>
 
-              {/* Assignee filter (derived from loaded page) */}
-              {uniqueAssignees.length > 0 && (
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-                  <select
-                    value={assigneeFilter}
-                    onChange={(e) => setAssigneeFilter(e.target.value)}
-                    className="appearance-none pl-9 pr-8 py-2 rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-slate-700 cursor-pointer"
-                  >
-                    <option value="All">Assignee: All</option>
-                    {uniqueAssignees.map((name) => (
-                      <option key={name}>{name}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-                </div>
-              )}
+              {/* Assignee filter */}
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                <select
+                  value={assigneeFilter}
+                  onChange={(e) => handleAssignee(e.target.value)}
+                  className="appearance-none pl-9 pr-8 py-2 rounded-lg border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-slate-700 cursor-pointer"
+                >
+                  <option value="All">Assignee: All</option>
+                  {uniqueAssignees.map((name) => (
+                    <option key={name}>{name}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+              </div>
 
               {/* Clear filters */}
               {hasFilters && (
@@ -421,14 +473,6 @@ export default function TaskManagement() {
               )}
             </div>
           </div>
-
-          {/* ── Error banner ── */}
-          {error && (
-            <div className="px-6 py-3 bg-red-50 border-b border-red-100 flex items-center gap-2 text-sm text-red-600">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              {error}
-            </div>
-          )}
 
           {/* ── Table ── */}
           <div className="overflow-x-auto">
@@ -446,51 +490,35 @@ export default function TaskManagement() {
                   <th className="px-4 sm:px-6 py-4 font-semibold hidden md:table-cell">
                     Due Date
                   </th>
-                  <th className="px-4 sm:px-6 py-4 font-semibold hidden lg:table-cell">
-                    Related Lead
+                  <th className="px-4 sm:px-6 py-4 font-semibold text-right">
+                    Actions
                   </th>
-                  {isAdmin && (
-                    <th className="px-4 sm:px-6 py-4 font-semibold text-right">
-                      Actions
-                    </th>
-                  )}
                 </tr>
               </thead>
 
               <tbody className="divide-y divide-slate-100">
-                {loading ? (
+                {paginatedTasks.length === 0 ? (
                   <tr>
-                    <td colSpan={colSpan} className="px-6 py-16 text-center">
-                      <Loader2 className="h-8 w-8 mx-auto text-blue-500 animate-spin mb-3" />
-                      <p className="text-sm text-slate-500">Loading tasks…</p>
-                    </td>
-                  </tr>
-                ) : filteredTasks.length === 0 ? (
-                  <tr>
-                    <td colSpan={colSpan} className="px-6 py-16 text-center">
+                    <td colSpan={6} className="px-6 py-16 text-center">
                       <ClipboardList className="h-10 w-10 mx-auto text-slate-300 mb-3" />
                       <p className="text-sm font-medium text-slate-500">
                         No tasks found
                       </p>
                       <p className="text-xs text-slate-400 mt-1">
-                        {hasFilters
-                          ? "Try adjusting your search or filters."
-                          : isAdmin
-                            ? "Create your first task to get started."
-                            : "No tasks have been assigned yet."}
+                        Try adjusting your search or filters.
                       </p>
                     </td>
                   </tr>
                 ) : (
-                  filteredTasks.map((task) => (
+                  paginatedTasks.map((task) => (
                     <tr
-                      key={task._id}
+                      key={task.id}
                       className="hover:bg-slate-50/60 transition-colors group"
                     >
                       {/* Task ID */}
                       <td className="px-4 sm:px-6 py-4">
-                        <span className="text-sm font-semibold text-blue-600 whitespace-nowrap font-mono">
-                          {shortId(task._id)}
+                        <span className="text-sm font-semibold text-blue-600 whitespace-nowrap">
+                          {task.id}
                         </span>
                       </td>
 
@@ -499,39 +527,23 @@ export default function TaskManagement() {
                         <p className="text-sm font-semibold text-slate-900 truncate">
                           {task.title}
                         </p>
-                        {task.description && (
-                          <p className="text-xs text-slate-400 mt-0.5 truncate hidden sm:block">
-                            {task.description}
-                          </p>
-                        )}
+                        <p className="text-xs text-slate-400 mt-0.5 truncate hidden sm:block">
+                          {task.description}
+                        </p>
                       </td>
 
-                      {/* Assignee */}
+                      {/* Assignee (hidden on xs) */}
                       <td className="px-4 sm:px-6 py-4 hidden sm:table-cell">
-                        {task.assignedTo ? (
-                          <div className="flex items-center gap-2.5">
-                            <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                              <span className="text-xs font-bold text-blue-600">
-                                {task.assignedTo.firstName
-                                  ?.charAt(0)
-                                  .toUpperCase()}
-                              </span>
-                            </div>
-                            <div>
-                              <p className="text-sm text-slate-700 whitespace-nowrap">
-                                {task.assignedTo.firstName}{" "}
-                                {task.assignedTo.lastName}
-                              </p>
-                              <p className="text-xs text-slate-400 truncate max-w-35">
-                                {task.assignedTo.email}
-                              </p>
-                            </div>
-                          </div>
-                        ) : (
-                          <span className="text-sm text-slate-400 italic">
-                            Unassigned
+                        <div className="flex items-center gap-2.5">
+                          <img
+                            src={task.assignee.avatar}
+                            alt={task.assignee.name}
+                            className="h-8 w-8 rounded-full object-cover bg-slate-200 shrink-0"
+                          />
+                          <span className="text-sm text-slate-700 whitespace-nowrap">
+                            {task.assignee.name}
                           </span>
-                        )}
+                        </div>
                       </td>
 
                       {/* Status */}
@@ -539,59 +551,32 @@ export default function TaskManagement() {
                         <StatusBadge status={task.status} />
                       </td>
 
-                      {/* Due Date */}
+                      {/* Due Date (hidden on xs & sm) */}
                       <td className="px-4 sm:px-6 py-4 hidden md:table-cell">
                         <span className="text-sm text-slate-500 whitespace-nowrap">
-                          {formatDisplayDate(task.dueDate)}
+                          {task.dueDate}
                         </span>
                       </td>
 
-                      {/* Related Lead */}
-                      <td className="px-4 sm:px-6 py-4 hidden lg:table-cell">
-                        {task.leadId ? (
-                          <div className="flex items-center gap-2">
-                            <div className="h-7 w-7 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
-                              <Briefcase className="h-3.5 w-3.5 text-purple-600" />
-                            </div>
-                            <div>
-                              <p className="text-sm text-slate-700 whitespace-nowrap">
-                                {task.leadId.name}
-                              </p>
-                              {task.leadId.email && (
-                                <p className="text-xs text-slate-400 truncate max-w-35">
-                                  {task.leadId.email}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        ) : (
-                          <span className="text-sm text-slate-400 italic">
-                            None
-                          </span>
-                        )}
+                      {/* Actions */}
+                      <td className="px-4 sm:px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1 text-slate-400">
+                          <button
+                            onClick={() => openEdit(task)}
+                            title="Edit task"
+                            className="p-1.5 rounded-md hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(task)}
+                            title="Delete task"
+                            className="p-1.5 rounded-md hover:bg-red-50 hover:text-red-600 transition-colors"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </td>
-
-                      {/* Actions (admin only) */}
-                      {isAdmin && (
-                        <td className="px-4 sm:px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-1 text-slate-400">
-                            <button
-                              onClick={() => openEdit(task)}
-                              title="Edit task"
-                              className="p-1.5 rounded-md hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(task)}
-                              title="Delete task"
-                              className="p-1.5 rounded-md hover:bg-red-50 hover:text-red-600 transition-colors"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </td>
-                      )}
                     </tr>
                   ))
                 )}
@@ -600,25 +585,22 @@ export default function TaskManagement() {
           </div>
 
           {/* ── Pagination ── */}
-          {total > 0 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalItems={total}
-              itemsPerPage={itemsPerPage}
-              onPageChange={setCurrentPage}
-            />
-          )}
+          <Pagination
+            currentPage={safePage}
+            totalPages={totalPages}
+            totalItems={filteredTasks.length}
+            itemsPerPage={ITEMS_PER_PAGE}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
 
-      {/* ── Modals ── */}
+      {/* ── Modal ── */}
       <CreateTaskModal
         isOpen={isModalOpen}
         onClose={closeModal}
         onSubmit={handleTaskSubmit}
         editTask={editingTask}
-        saving={saving}
       />
 
       <DeleteConfirmModal

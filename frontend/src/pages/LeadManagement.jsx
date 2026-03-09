@@ -1,7 +1,6 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { Edit2, Trash2, AlertTriangle } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Edit2, Trash2 } from 'lucide-react';
 import axios from 'axios';
-import Swal from "sweetalert2";
 import AddLeadModal from '../components/lead/AddLeadModal';
 import EditLeadModal from '../components/lead/EditLeadModal';
 
@@ -20,8 +19,6 @@ const LeadManagement = () => {
 
   const statusOptions = ['All', 'New', 'Contacted', 'Converted'];
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-  const token = localStorage.getItem("userToken");
 
   const filteredLeads = useMemo(() => {
     let filtered = leads.filter(lead =>
@@ -61,14 +58,6 @@ const LeadManagement = () => {
 
   const totalPages = Math.ceil(sortedLeads.length / itemsPerPage);
 
-  const Toast = Swal.mixin({
-    toast: true,
-    position: "top-end",
-    showConfirmButton: false,
-    timer: 3000,
-    timerProgressBar: true,
-  });
-
   const handleSort = (key) => {
     setSortConfig({
       key,
@@ -99,139 +88,52 @@ const LeadManagement = () => {
     }
   };
 
-  const fetchLeads = useCallback (async () => {
+  const fetchLeads = async () => {
     try {
       const res = await axios.get(
         `${API_BASE_URL}/leads/all`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        {withCredentials:true}
       )
-      const mappedLeads = (res.data.data || []).map(lead => ({
-        id: lead._id,
-        name: lead.name,
-        email: lead.email,
-        phone: lead.phone,
-        created: new Date(lead.createdAt).toLocaleDateString(),
-        status: lead.status,
-      }));
-      setLeads(mappedLeads);
-      console.log("Response :", res.data.data);
+      setLeads(res.data || []);
+      console.log("Response :", res.data);
     } catch (error) {
       console.error("Failed to fetch leads", error);
     }
-  },[API_BASE_URL, token]);
+  };
 
   useEffect(() => {
     fetchLeads();
-  }, [fetchLeads]);
+  }, []);
 
-  const handleUpdateLead = async (updatedLead) => {
-    try {
-      const res = await axios.put(
-        `${API_BASE_URL}/leads/update/${updatedLead.id}`,
-        {
-          name: updatedLead.name,
-          email: updatedLead.email,
-          phone: updatedLead.phone,
-          status: updatedLead.status,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-  
-      // Update state locally
-      // setLeads(leads.map(l => l.id === updatedLead.id ? {
-      //   ...l,
-      //   name: res.data.data.name,
-      //   email: res.data.data.email,
-      //   phone: res.data.data.phone,
-      //   status: res.data.data.status,
-      //   created: new Date(res.data.data.createdAt).toLocaleDateString()
-      // } : l));
-      fetchLeads();
+  const handleUpdateLead = (updatedLead) => {
 
-      Toast.fire({
-        icon: "success",
-        title: "Lead updated successfully",
-      });
+    const updatedLeads = leads.map((l) =>
+      l.id === updatedLead.id ? updatedLead : l
+    );
   
-    } catch (error) {
-      Toast.fire({
-        icon: "error",
-        title: "Failed to update lead",
-      });
-      console.error("Error updating lead:", error.response?.data || error);
-    }
+    setLeads(updatedLeads);
   };
 
-  const handleDeleteLead = async (_id) => {
+  const handleDeleteLead = async (id) => {
     try {
-      await axios.delete(`${API_BASE_URL}/leads/delete/${_id}`, {
-       
-        headers: {
-          Authorization: `Bearer ${token}`,
-        }
+      await axios.delete(`${API_BASE_URL}/leads/delete/${id}`, {
+        withCredentials: true, // sends cookies/session info
       });
-      // setLeads(leads.filter((lead) => lead.id !== _id));
-      fetchLeads();
-
-      Toast.fire({
-        icon: "success",
-        title: "Lead deleted successfully",
-      });
-
+      setLeads(leads.filter((lead) => lead.id !== id));
     } catch (error) {
-      Toast.fire({
-        icon: "error",
-        title: "Failed to delete lead",
-      });
       console.error("Error deleting lead:", error);
     }
   };
 
   const handleAddLead = async (newLead) => {
     try {
-      const leadToSend = {
-        name: newLead.name,
-        email: newLead.email,
-        phone: newLead.phone,
-        status: newLead.status,
-      };
-
-      const res = await axios.post(`${API_BASE_URL}/leads/create`, leadToSend, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        }
+      const res = await axios.post(`${API_BASE_URL}/leads/create`, newLead, {
+        withCredentials: true,
       });
-      // // Add the returned lead to state
-      // const addedLead = {
-      //   id: res.data.data._id,
-      //   name: res.data.data.name,
-      //   email: res.data.data.email,
-      //   phone: res.data.data.phone,
-      //   created: new Date(res.data.data.createdAt).toLocaleDateString(),
-      //   status: res.data.data.status,
-      // };
-      // setLeads([...leads, addedLead]);
-      fetchLeads();
-
-      Toast.fire({
-        icon: "success",
-        title: "Lead added successfully",
-      });
-
+      // Add the returned lead to state
+      setLeads([...leads, res.data]);
     } catch (error) {
-      Toast.fire({
-        icon: "error",
-        title: "Failed to add lead",
-      });
-      console.error("Error adding lead:", error.response?.data || error);
+      console.error("Error adding lead:", error);
     }
   };
 
@@ -385,7 +287,12 @@ const LeadManagement = () => {
                                     <Trash2 size={18} />
                                 </button>
 
-                               
+                                <EditLeadModal
+                                  isOpen={editOpen}
+                                  onClose={() => setEditOpen(false)}
+                                  lead={selectedLead}
+                                  onUpdate={handleUpdateLead}
+                                />
                             </div>
                             </td>
                         </tr>
@@ -393,12 +300,6 @@ const LeadManagement = () => {
                 })}
               </tbody>
             </table>
-            <EditLeadModal
-              isOpen={editOpen}
-              onClose={() => setEditOpen(false)}
-              lead={selectedLead}
-              onUpdate={handleUpdateLead}
-            />
           </div>
 
           {/* Pagination */}
@@ -447,15 +348,7 @@ const LeadManagement = () => {
       {deleteModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-white rounded-lg p-6 w-96 shadow-lg">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="bg-red-200 p-2 rounded-full">
-              <AlertTriangle className="text-white fill-red-600 w-6 h-6" />
-            </div>
-
-            <h2 className="text-lg font-semibold text-gray-900">
-              Confirm Delete
-            </h2>
-          </div>
+            <h2 className="text-lg font-semibold mb-4">Confirm Delete</h2>
             <p className="mb-6">
               Are you sure you want to delete <span className="font-medium">{leadToDelete?.name}</span>?
             </p>

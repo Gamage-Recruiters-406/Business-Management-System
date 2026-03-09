@@ -24,6 +24,23 @@ const CARDS = [
     description: "Manage and track your sales pipeline prospects.",
     color: "darkblue",
   },
+  {
+    to: "/dashboard",
+    icon: ClipboardList,
+    label: "Dashboard",
+    description: "View an overview of your business metrics and performance.",
+    color: "purple",
+  },
+
+    {
+    to: "/reports",
+    icon: Users,
+    label: "Admin Reports",
+    description: "View comprehensive reports and analytics.",
+    color: "blue",
+  },
+
+
 ];
 
 const COLOR = {
@@ -41,6 +58,12 @@ const COLOR = {
     icon: "bg-blue-100 text-blue-800",
     btn: "bg-blue-800 hover:bg-blue-950",
     border: "hover:border-blue-300",
+  },
+  purple: {
+    icon: "bg-purple-100 text-purple-600",
+    btn: "bg-purple-600 hover:bg-purple-700",
+    border: "hover:border-purple-300",
+
   },
 };
 

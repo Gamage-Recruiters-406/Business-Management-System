@@ -2,31 +2,40 @@ import React, { useState, useEffect } from "react";
 import {
   X,
   ChevronDown,
+  Search,
   Plus,
   Clock,
   RefreshCw,
   XCircle,
   CheckCircle2,
-  User,
-  Briefcase,
 } from "lucide-react";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-const STATUS_OPTIONS = [
-  { value: "pending", label: "Pending", Icon: Clock },
-  { value: "in-progress", label: "In Progress", Icon: RefreshCw },
-  { value: "completed", label: "Completed", Icon: CheckCircle2 },
-  { value: "cancelled", label: "Cancelled", Icon: XCircle },
+const ASSIGNEE_OPTIONS = [
+  "John Doe",
+  "Sarah Williams",
+  "Mark Stevenson",
+  "Emma Davis",
+  "Alex Thompson",
+  "Ryan Parker",
+  "Olivia Chen",
 ];
+const STATUS_OPTIONS = ["Pending", "In Progress", "Completed", "Cancelled"];
+const PRIORITY_OPTIONS = ["Low", "Medium", "High", "Critical"];
+
+const STATUS_ICONS = {
+  Pending: Clock,
+  "In Progress": RefreshCw,
+  Completed: CheckCircle2,
+  Cancelled: XCircle,
+};
 
 const EMPTY_FORM = {
   title: "",
   description: "",
-  status: "pending",
+  assignee: "",
+  status: "Pending",
   dueDate: "",
-  assignedTo: "",
-  leadId: "",
+  priority: "Medium",
 };
 
 export default function CreateTaskModal({
@@ -37,37 +46,6 @@ export default function CreateTaskModal({
 }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
-  const [users, setUsers] = useState([]);
-  const [leads, setLeads] = useState([]);
-
-  // Fetch employees for the assignee dropdown
-  useEffect(() => {
-    if (!isOpen) return;
-    fetch(`${API_BASE_URL}/employees`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("userToken") || ""}`,
-      },
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data.data)) setUsers(data.data);
-        else if (Array.isArray(data)) setUsers(data);
-      })
-      .catch(() => {});
-
-    // Fetch leads for the lead dropdown
-    fetch(`${API_BASE_URL}/leads/all`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("userToken") || ""}`,
-      },
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data.data)) setLeads(data.data);
-        else if (Array.isArray(data)) setLeads(data);
-      })
-      .catch(() => {});
-  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -76,11 +54,11 @@ export default function CreateTaskModal({
         editTask
           ? {
               title: editTask.title,
-              description: editTask.description || "",
+              description: editTask.description,
+              assignee: editTask.assignee.name,
               status: editTask.status,
-              dueDate: editTask.dueDate ? editTask.dueDate.split("T")[0] : "",
-              assignedTo: editTask.assignedTo?._id || "",
-              leadId: editTask.leadId?._id || editTask.leadId || "",
+              dueDate: editTask.dueDateRaw ?? "",
+              priority: editTask.priority ?? "Medium",
             }
           : EMPTY_FORM,
       );
@@ -92,10 +70,6 @@ export default function CreateTaskModal({
   const validate = () => {
     const next = {};
     if (!form.title.trim()) next.title = "Task title is required.";
-    if (form.title.trim().length > 200)
-      next.title = "Task title cannot exceed 200 characters.";
-    if (form.description.length > 1000)
-      next.description = "Description cannot exceed 1000 characters.";
     return next;
   };
 
@@ -106,6 +80,7 @@ export default function CreateTaskModal({
       return;
     }
     onSubmit(form);
+    onClose();
   };
 
   const field = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
@@ -127,7 +102,7 @@ export default function CreateTaskModal({
             <p className="text-sm text-slate-500 mt-1">
               {editTask
                 ? "Update the task details below."
-                : "Fill in the details to create a new task."}
+                : "Fill in the details to assign a new task to your team."}
             </p>
           </div>
           <button
@@ -143,14 +118,13 @@ export default function CreateTaskModal({
           {/* Task Title */}
           <div className="space-y-1.5">
             <label className="text-sm font-semibold text-slate-800">
-              Task Title <span className="text-red-500">*</span>
+              Task Title
             </label>
             <input
               type="text"
               placeholder="Enter task headline"
               value={form.title}
               onChange={(e) => field("title", e.target.value)}
-              maxLength={200}
               className={`w-full px-4 py-3 rounded-xl border text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
                 errors.title
                   ? "border-red-400 bg-red-50"
@@ -172,21 +146,8 @@ export default function CreateTaskModal({
               value={form.description}
               onChange={(e) => field("description", e.target.value)}
               rows={4}
-              maxLength={1000}
-              className={`w-full px-4 py-3 rounded-xl border bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-700 placeholder:text-slate-400 resize-none transition-colors ${
-                errors.description ? "border-red-400" : "border-slate-200"
-              }`}
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-slate-700 placeholder:text-slate-400 resize-none transition-colors"
             />
-            <div className="flex justify-between">
-              {errors.description ? (
-                <p className="text-xs text-red-500">{errors.description}</p>
-              ) : (
-                <span />
-              )}
-              <p className="text-xs text-slate-400 text-right">
-                {form.description.length}/1000
-              </p>
-            </div>
           </div>
 
           {/* Assignee + Due Date */}
@@ -194,19 +155,19 @@ export default function CreateTaskModal({
             {/* Assignee */}
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-slate-800">
-                Assign To
+                Assignee
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
                 <select
-                  value={form.assignedTo}
-                  onChange={(e) => field("assignedTo", e.target.value)}
-                  className="w-full appearance-none pl-9 pr-8 py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-slate-700 transition-colors"
+                  value={form.assignee}
+                  onChange={(e) => field("assignee", e.target.value)}
+                  className="w-full appearance-none pl-9 pr-8 py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-slate-500 transition-colors"
                 >
-                  <option value="">Unassigned</option>
-                  {users.map((u) => (
-                    <option key={u._id} value={u._id}>
-                      {u.firstName} {u.lastName}
+                  <option value="">Select team member...</option>
+                  {ASSIGNEE_OPTIONS.map((a) => (
+                    <option key={a} className="text-slate-700">
+                      {a}
                     </option>
                   ))}
                 </select>
@@ -222,33 +183,9 @@ export default function CreateTaskModal({
               <input
                 type="date"
                 value={form.dueDate}
-                min={new Date().toISOString().split("T")[0]}
                 onChange={(e) => field("dueDate", e.target.value)}
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-slate-700 transition-colors"
               />
-            </div>
-          </div>
-
-          {/* Lead */}
-          <div className="space-y-1.5">
-            <label className="text-sm font-semibold text-slate-800">
-              Related Lead
-            </label>
-            <div className="relative">
-              <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-              <select
-                value={form.leadId}
-                onChange={(e) => field("leadId", e.target.value)}
-                className="w-full appearance-none pl-9 pr-8 py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-slate-700 transition-colors"
-              >
-                <option value="">No lead</option>
-                {leads.map((l) => (
-                  <option key={l._id} value={l._id}>
-                    {l.name} — {l.email}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
             </div>
           </div>
 
@@ -258,13 +195,14 @@ export default function CreateTaskModal({
               Status
             </label>
             <div className="flex gap-2">
-              {STATUS_OPTIONS.map(({ value, label, Icon }) => {
-                const isSelected = form.status === value;
+              {STATUS_OPTIONS.map((s) => {
+                const Icon = STATUS_ICONS[s];
+                const isSelected = form.status === s;
                 return (
                   <button
-                    key={value}
+                    key={s}
                     type="button"
-                    onClick={() => field("status", value)}
+                    onClick={() => field("status", s)}
                     className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl border text-xs font-medium transition-all ${
                       isSelected
                         ? "border-blue-500 text-blue-600 bg-white shadow-sm"
@@ -272,10 +210,29 @@ export default function CreateTaskModal({
                     }`}
                   >
                     <Icon className="h-3.5 w-3.5 shrink-0" />
-                    <span className="truncate">{label}</span>
+                    <span className="truncate">{s}</span>
                   </button>
                 );
               })}
+            </div>
+          </div>
+
+          {/* Priority */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-semibold text-slate-800">
+              Priority
+            </label>
+            <div className="relative">
+              <select
+                value={form.priority}
+                onChange={(e) => field("priority", e.target.value)}
+                className="w-full appearance-none px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-slate-700 transition-colors"
+              >
+                {PRIORITY_OPTIONS.map((p) => (
+                  <option key={p}>{p}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
             </div>
           </div>
         </div>
