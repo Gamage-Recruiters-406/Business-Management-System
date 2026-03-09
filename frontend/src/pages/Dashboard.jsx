@@ -20,7 +20,14 @@ const TasklyDashboard = () => {
     const fetchDashboardData = async () => {
       try {
         const token = localStorage.getItem("userToken");
-        const config = { headers: { 'Authorization': `Bearer ${token}` } };
+        console.log("Fetching dashboard data with token:", token); 
+        console.log("Token sent to backend:", token); 
+        const config = { 
+          headers: { 
+            'Authorization': `Bearer ${token}`
+          },
+          withCredentials: true
+        };
 
         const [leadsRes, tasksRes, employeesRes] = await Promise.all([
             axios.get(`${import.meta.env.VITE_API_BASE_URL}/leads/all`, config),
@@ -31,11 +38,25 @@ const TasklyDashboard = () => {
         const rawTasks = tasksRes.data.tasks || [];
         const total = rawTasks.length;
 
-        // Pie Chart 
         const chartData = [
-          { name: 'In Progress Tasks', value: rawTasks.filter(t => t.status === 'in-progress').length, percentage: total ? Math.round((rawTasks.filter(t => t.status === 'in-progress').length / total) * 100) : 0 },
-          { name: 'Completed Tasks', value: rawTasks.filter(t => t.status === 'completed').length, percentage: total ? Math.round((rawTasks.filter(t => t.status === 'completed').length / total) * 100) : 0 },
-          { name: 'Pending Tasks', value: rawTasks.filter(t => t.status === 'pending').length, percentage: total ? Math.round((rawTasks.filter(t => t.status === 'pending').length / total) * 100) : 0 }
+          { 
+            name: 'In Progress Tasks', 
+            value: rawTasks.filter(t => t.status === 'in-progress').length, 
+            percentage: total ? Math.round((rawTasks.filter(t => t.status === 'in-progress').length / total) * 100) : 0,
+            color: '#3b82f6'
+          },
+          { 
+            name: 'Completed Tasks', 
+            value: rawTasks.filter(t => t.status === 'completed').length, 
+            percentage: total ? Math.round((rawTasks.filter(t => t.status === 'completed').length / total) * 100) : 0,
+            color: '#22c55e' 
+          },
+          { 
+            name: 'Pending Tasks', 
+            value: rawTasks.filter(t => t.status === 'pending').length, 
+            percentage: total ? Math.round((rawTasks.filter(t => t.status === 'pending').length / total) * 100) : 0,
+            color: '#f97316' 
+          }
         ];
 
         setDashboardData({
@@ -106,13 +127,18 @@ const TasklyDashboard = () => {
         </div>
 
         {/* Recent Activities Section */}
-        <RecentActivities tasks={dashboardData.tasks.slice(0, 5).map(task => ({
-            name: task.title,
-            id: task.task_id || `#${task._id?.slice(-5)}`,
-            user: task.assignedTo || 'Unassigned',
-            status: task.status === 'in-progress' ? 'In Progress' : task.status.charAt(0).toUpperCase() + task.status.slice(1),
-            date: new Date(task.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-        }))} />
+        <RecentActivities 
+          tasks={dashboardData.tasks && Array.isArray(dashboardData.tasks) 
+            ? dashboardData.tasks.slice(0, 5).map(task => ({
+                name: task.title || "No Title",
+                id: task.task_id || task._id || "N/A",
+                user: typeof task.assignedTo === 'object' ? task.assignedTo.name : (task.assignedTo || 'Unassigned'),
+                status: task.status ? task.status.charAt(0).toUpperCase() + task.status.slice(1) : 'Pending',
+                date: task.createdAt ? new Date(task.createdAt).toLocaleDateString() : 'N/A'
+            })) 
+            : []
+          } 
+        />
       </div>
     </div>
   );
