@@ -8,7 +8,7 @@ export default function EditLeadModal({ isOpen, onClose, lead, onUpdate }) {
     email: "",
     phone: "",
     date: "",
-    status: "NEW"
+    status: "New"
   });
 
   useEffect(() => {
